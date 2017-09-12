@@ -1,0 +1,12 @@
+﻿  game.c
+..\..\..\..\..\git\gameframework2d-master\src\game.c(1): fatal error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  gf2d_draw.c
+..\..\..\..\..\git\gameframework2d-master\src\gf2d_draw.c(1): fatal error C1083: Cannot open include file: 'gf2d_draw.h': No such file or directory
+  gf2d_graphics.c
+..\..\..\..\..\git\gameframework2d-master\src\gf2d_graphics.c(1): fatal error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  gf2d_sprite.c
+..\..\..\..\..\git\gameframework2d-master\src\gf2d_sprite.c(2): fatal error C1083: Cannot open include file: 'SDL_image.h': No such file or directory
+  gf2d_vector.c
+..\..\..\..\..\git\gameframework2d-master\src\gf2d_vector.c(4): fatal error C1083: Cannot open include file: 'gf2d_vector.h': No such file or directory
+  simple_logger.c
+..\..\..\..\..\git\gameframework2d-master\src\simple_logger.c(1): fatal error C1083: Cannot open include file: 'simple_logger.h': No such file or directory
