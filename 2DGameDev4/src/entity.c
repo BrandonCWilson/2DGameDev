@@ -12,6 +12,7 @@ static EntManager entity_manager;
 
 void entity_system_init(Uint32 max)
 {
+	int i;
 	slog("initializing entity system..");
 	if (!max)
 	{
@@ -21,7 +22,7 @@ void entity_system_init(Uint32 max)
 	entity_manager.max_entities = max;
 	entity_manager.ent_list = (Entity *)malloc(sizeof(Entity)*max);
 	memset(entity_manager.ent_list, 0, sizeof(Entity)*max);
-	
+
 	slog("entity system initialized");
 	atexit(entity_system_close);
 }
@@ -33,7 +34,7 @@ Entity *entity_new()
 	/*search for an unused entity address*/
 	for (i = 0; i < entity_manager.max_entities; i++)
 	{
-		if (entity_manager.ent_list[i].inUse)
+		if (!entity_manager.ent_list[i].inUse)
 		{
 			entity_delete(&entity_manager.ent_list[i]);	// clean up the old data
 			entity_manager.ent_list[i].inUse = true;	// set it to inUse
@@ -59,19 +60,42 @@ void entity_free(Entity *ent)
 void entity_update_all()
 {
 	int i;
-	slog("updating entities..");
 	for (i = 0; i < entity_manager.max_entities; i++)
 	{
 		if (entity_manager.ent_list[i].inUse)
 		{
+			
 			vector2d_add(entity_manager.ent_list[i].position, entity_manager.ent_list[i].position, entity_manager.ent_list[i].velocity);
+
+			// handle the entity think functions
+			if (!entity_manager.ent_list[i].update)
+			{
+				// no update function ..
+			}
+			else 
+			{
+				entity_manager.ent_list[i].update(&entity_manager.ent_list[i]);
+			}
 
 			if (!entity_manager.ent_list[i].sprite)
 			{
-				continue;
+				// no sprite ..
 			}
-			entity_manager.ent_list[i].frame += 0.1;
-			if (entity_manager.ent_list[i].frame > 16.0)entity_manager.ent_list[i].frame = 0;
+			else
+			{
+				gf2d_sprite_draw(
+					entity_manager.ent_list[i].sprite,
+					entity_manager.ent_list[i].position,
+					&entity_manager.ent_list[i].scale,
+					NULL,
+					NULL,
+					NULL,
+					NULL,
+					(int)entity_manager.ent_list[i].frame);
+
+				entity_manager.ent_list[i].frame += 0.1;
+				if (entity_manager.ent_list[i].frame > 16.0)entity_manager.ent_list[i].frame = 0;
+			}
 		}
 
 	}

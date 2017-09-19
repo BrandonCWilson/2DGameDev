@@ -33,7 +33,10 @@
     <ClCompile Include="..\..\..\..\..\git\gameframework2d-master\src\simple_logger.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="entity.c">
+    <ClCompile Include="src\entity.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\testUpdate.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -59,7 +62,10 @@
     <ClInclude Include="..\..\..\..\..\git\gameframework2d-master\include\simple_logger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="entity.h">
+    <ClInclude Include="include\entity.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\testUpdate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
