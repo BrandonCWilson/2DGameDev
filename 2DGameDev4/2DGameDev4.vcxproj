@@ -94,6 +94,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>C:\Users\Brando\Documents\Visual Studio 2015\Projects\2DGameDev\2DGameDev4\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -123,12 +124,14 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)_CRT_SECURE_NO_DEPRECATE</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>C:\Users\Brando\Documents\Visual Studio 2015\Projects\2DGameDev\2DGameDev4\SDL2_image-2.0.1\include;C:\Users\Brando\Documents\Visual Studio 2015\Projects\2DGameDev\2DGameDev4\SDL2_mixer-2.0.1\include;C:\Users\Brando\Documents\Visual Studio 2015\Projects\2DGameDev\2DGameDev4\SDL2_ttf-2.0.14\include;C:\Users\Brando\Documents\Visual Studio 2015\Projects\2DGameDev\2DGameDev4\SDL2-2.0.5\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Users\Brando\Documents\Visual Studio 2015\Projects\2DGameDev\2DGameDev4\SDL2_image-2.0.1\lib\x86;C:\Users\Brando\Documents\Visual Studio 2015\Projects\2DGameDev\2DGameDev4\SDL2_mixer-2.0.1\lib\x86;C:\Users\Brando\Documents\Visual Studio 2015\Projects\2DGameDev\2DGameDev4\SDL2_ttf-2.0.14\lib\x86;C:\Users\Brando\Documents\Visual Studio 2015\Projects\2DGameDev\2DGameDev4\SDL2-2.0.5\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

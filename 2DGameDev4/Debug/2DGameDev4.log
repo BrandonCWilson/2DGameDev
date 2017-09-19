@@ -1,6 +1,2 @@
-﻿  entity.c
-  game.c
-c:\users\brando\git\gameframework2d-master\src\game.c(43): warning C4305: '+=': truncation from 'double' to 'float'
-  Generating Code...
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\entity.c(19): warning C4716: 'entity_new': must return a value
-  2DGameDev4.vcxproj -> C:\Users\Brando\Documents\Visual Studio 2015\Projects\2DGameDev4\Debug\2DGameDev4.exe
+﻿  game.c
+c:\users\brando\git\gameframework2d-master\src\game.c(5): fatal error C1083: Cannot open include file: 'entity.h': No such file or directory

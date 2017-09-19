@@ -21,7 +21,7 @@ void entity_system_init(Uint32 max)
 	entity_manager.max_entities = max;
 	entity_manager.ent_list = (Entity *)malloc(sizeof(Entity)*max);
 	memset(entity_manager.ent_list, 0, sizeof(Entity)*max);
-	
+
 	slog("entity system initialized");
 	atexit(entity_system_close);
 }

@@ -5,7 +5,7 @@
 #ifndef _ENTITY_H_
 #define _ENTITY_H_
 
-typedef struct Entity_s 
+typedef struct Entity_s
 {
 	bool inUse;
 
