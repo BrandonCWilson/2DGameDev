@@ -25,8 +25,13 @@
     <ClCompile Include="..\..\..\..\..\git\gameframework2d-master\src\gf2d_sprite.c" />
     <ClCompile Include="..\..\..\..\..\git\gameframework2d-master\src\gf2d_vector.c" />
     <ClCompile Include="..\..\..\..\..\git\gameframework2d-master\src\simple_logger.c" />
+    <ClCompile Include="src\camera.c" />
+    <ClCompile Include="src\config_loader.c" />
     <ClCompile Include="src\entity.c" />
+    <ClCompile Include="src\map.c" />
+    <ClCompile Include="src\player.c" />
     <ClCompile Include="src\testUpdate.c" />
+    <ClCompile Include="src\tile.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\git\gameframework2d-master\include\gf2d_draw.h" />
@@ -36,8 +41,13 @@
     <ClInclude Include="..\..\..\..\..\git\gameframework2d-master\include\gf2d_types.h" />
     <ClInclude Include="..\..\..\..\..\git\gameframework2d-master\include\gf2d_vector.h" />
     <ClInclude Include="..\..\..\..\..\git\gameframework2d-master\include\simple_logger.h" />
+    <ClInclude Include="include\camera.h" />
+    <ClInclude Include="include\config_loader.h" />
     <ClInclude Include="include\entity.h" />
+    <ClInclude Include="include\map.h" />
+    <ClInclude Include="include\player.h" />
     <ClInclude Include="include\testUpdate.h" />
+    <ClInclude Include="include\tile.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3D9E2002-3309-47A7-AD7C-D308D1AA09D5}</ProjectGuid>

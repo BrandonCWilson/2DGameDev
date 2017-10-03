@@ -30,7 +30,6 @@ void entity_system_init(Uint32 max)
 Entity *entity_new()
 {
 	int i;
-	slog("creating a new entity..");
 	/*search for an unused entity address*/
 	for (i = 0; i < entity_manager.max_entities; i++)
 	{
@@ -38,6 +37,7 @@ Entity *entity_new()
 		{
 			entity_delete(&entity_manager.ent_list[i]);	// clean up the old data
 			entity_manager.ent_list[i].inUse = true;	// set it to inUse
+			vector2d_set(entity_manager.ent_list[i].scale, 1, 1);	// don't be ant man
 			return &entity_manager.ent_list[i];			// return address of this array element
 		}
 	}
@@ -83,16 +83,6 @@ void entity_update_all()
 			}
 			else
 			{
-				gf2d_sprite_draw(
-					entity_manager.ent_list[i].sprite,
-					entity_manager.ent_list[i].position,
-					&entity_manager.ent_list[i].scale,
-					NULL,
-					NULL,
-					NULL,
-					NULL,
-					(int)entity_manager.ent_list[i].frame);
-
 				entity_manager.ent_list[i].frame += 0.1;
 				if (entity_manager.ent_list[i].frame > 16.0)entity_manager.ent_list[i].frame = 0;
 			}
@@ -103,9 +93,28 @@ void entity_update_all()
 
 void entity_draw(Entity *ent)
 {
-	slog("drawing entity..");
+	if (!ent)
+		return;
 
-	gf2d_sprite_draw(&ent->sprite, ent->position, &ent->scale, 0, 0, 0, 0, (int)ent->frame);
+	gf2d_sprite_draw(
+		ent->sprite,
+		ent->position,
+		&ent->scale,
+		NULL,
+		NULL,
+		NULL,
+		&ent->colorShift,
+		(int)ent->frame);
+}
+
+void entity_draw_all()
+{
+	int i;
+	for (i = 0; i < entity_manager.max_entities; i++)
+	{
+		if (entity_manager.ent_list[i].inUse)
+			entity_draw(&entity_manager.ent_list[i]);
+	}
 }
 
 void entity_system_close()
