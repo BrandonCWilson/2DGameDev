@@ -1,5 +1,7 @@
-﻿  config_loader.c
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\config_loader.c(19): warning C4034: sizeof returns 0
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\config_loader.c(55): warning C4033: 'config_loader_entities_init_count_incoming' must return a value
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\config_loader.c(64): warning C4715: 'config_loader_entities_init_count_incoming': not all control paths return a value
+﻿  audio.c
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\audio.c(59): warning C4113: 'void (__cdecl *)()' differs in parameter lists from 'void (__cdecl *)(void)'
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\audio.c(86): warning C4113: 'void (__cdecl *)()' differs in parameter lists from 'void (__cdecl *)(void)'
+  game.c
+c:\users\brando\git\gameframework2d-master\src\game.c(98): warning C4305: '+=': truncation from 'double' to 'float'
+  Generating Code...
   2DGameDev4.vcxproj -> C:\Users\Brando\Documents\Visual Studio 2015\Projects\2DGameDev4\Debug\2DGameDev4.exe

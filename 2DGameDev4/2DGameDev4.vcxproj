@@ -25,6 +25,7 @@
     <ClCompile Include="..\..\..\..\..\git\gameframework2d-master\src\gf2d_sprite.c" />
     <ClCompile Include="..\..\..\..\..\git\gameframework2d-master\src\gf2d_vector.c" />
     <ClCompile Include="..\..\..\..\..\git\gameframework2d-master\src\simple_logger.c" />
+    <ClCompile Include="src\audio.c" />
     <ClCompile Include="src\camera.c" />
     <ClCompile Include="src\config_loader.c" />
     <ClCompile Include="src\entity.c" />
@@ -41,6 +42,7 @@
     <ClInclude Include="..\..\..\..\..\git\gameframework2d-master\include\gf2d_types.h" />
     <ClInclude Include="..\..\..\..\..\git\gameframework2d-master\include\gf2d_vector.h" />
     <ClInclude Include="..\..\..\..\..\git\gameframework2d-master\include\simple_logger.h" />
+    <ClInclude Include="include\audio.h" />
     <ClInclude Include="include\camera.h" />
     <ClInclude Include="include\config_loader.h" />
     <ClInclude Include="include\entity.h" />
@@ -126,7 +128,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Users\Brando\Documents\Visual Studio 2015\Projects\2DGameDev4\2DGameDev4\SDL2-2.0.5\lib\x86;C:\Users\Brando\Documents\Visual Studio 2015\Projects\2DGameDev4\2DGameDev4\SDL2_ttf-2.0.14\lib\x86;C:\Users\Brando\Documents\Visual Studio 2015\Projects\2DGameDev4\2DGameDev4\SDL2_mixer-2.0.1\lib\x86;C:\Users\Brando\Documents\Visual Studio 2015\Projects\2DGameDev4\2DGameDev4\SDL2_image-2.0.1\lib\x86;</AdditionalLibraryDirectories>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);SDL2.lib;SDL2main.lib;SDL2_image.lib;</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_mixer.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

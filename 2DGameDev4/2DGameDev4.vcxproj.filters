@@ -54,6 +54,9 @@
     <ClCompile Include="src\player.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\audio.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\git\gameframework2d-master\include\gf2d_draw.h">
@@ -96,6 +99,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\player.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\audio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
