@@ -57,6 +57,18 @@
     <ClCompile Include="src\audio.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\collision.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\priority_queue.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pathfinding.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\raycast.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\git\gameframework2d-master\include\gf2d_draw.h">
@@ -102,6 +114,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\audio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\collision.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\priority_queue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\pathfinding.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\raycast.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

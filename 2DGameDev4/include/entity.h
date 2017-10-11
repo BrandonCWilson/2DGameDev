@@ -1,11 +1,13 @@
 #include <SDL.h>
 #include "gf2d_vector.h"
 #include "gf2d_sprite.h"
+#include "collision.h"
+#include "raycast.h"
 
 #ifndef _ENTITY_H_
 #define _ENTITY_H_
 
-typedef struct Entity_s 
+typedef struct Entity_s
 {
 	bool inUse;
 
@@ -13,6 +15,7 @@ typedef struct Entity_s
 	int timer;
 	Vector2D position;
 	Vector2D scale;
+	BoxCollider *coll;
 	void(*update)(struct Entity_s *self);
 	Sprite *sprite;
 	float frame;
@@ -36,6 +39,8 @@ void entity_delete(Entity *ent);
 void entity_free(Entity *ent);
 
 void entity_update_all();
+
+RaycastHit *raycast_through_all_entities(Vector2D start, Vector2D direction);
 
 void entity_draw(Entity *ent);
 

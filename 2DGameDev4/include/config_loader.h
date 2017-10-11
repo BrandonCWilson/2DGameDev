@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "player.h"
 #include "testUpdate.h"
+#include "map.h"
 
 #ifndef _CONFIG_LOADER_H_
 #define _CONFIG_LOADER_H_

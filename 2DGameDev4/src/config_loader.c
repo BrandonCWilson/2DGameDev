@@ -1,6 +1,14 @@
 #include "config_loader.h"
 #include <string.h>
 #include "simple_logger.h"
+#include "priority_queue.h"
+#include "testUpdate.h"
+
+FunctionParser funct[] =
+{
+	{ player_update, "player_update" }
+	,{ clickerUpdate, "clickerUpdate" }
+};
 
 int level_MAX_WIDTH = 0;
 int level_MAX_HEIGHT = 0;
@@ -12,6 +20,8 @@ typedef struct
 } PrefabManager;
 
 PrefabManager prefab_manager;
+
+PriorityQueue *map_list;
 
 void * config_loader_char_to_function(char *fname)
 {
@@ -113,7 +123,106 @@ void config_loader_map_init(char *filename)
 {
 	// allocate memory based on information at the top of the file
 	// such as max level width and height
+	FILE *file;
+	TileMap *map;
+	char reader[1024];
+	int framew, frameh, framesperline;
+	if (!filename)
+	{
+		slog("no filename to load a map from...");
+		return NULL;
+	}
+	file = fopen(filename, "r");
+	if (!file)
+	{
+		slog("failed to open map file");
+		return NULL;
+	}
+	map = (TileMap *)malloc(sizeof(TileMap));
+	if (!map)
+	{
+		slog("failed to allocate map");
+		return NULL;
+	}
+	memset(map, 0, sizeof(TileMap));
+	while (fscanf(file, "%s", reader) != EOF)
+	{
+		if (strcmp(reader, "width:") == 0)
+		{
+			fscanf(file, "%ui", &map->width);
+			continue;
+		}
+		if (strcmp(reader, "height:") == 0)
+		{
+			fscanf(file, "%ui", &map->height);
+			continue;
+		}
+		if (strcmp(reader, "start:") == 0)
+		{
+			fscanf(file, "%lf, %lf", &map->start.x, &map->start.y);
+			continue;
+		}
+		if (strcmp(reader, "end:") == 0)
+		{
+			fscanf(file, "%lf, %lf", &map->end.x, &map->end.y);
+			continue;
+		}
+		if (strcmp(reader, "tileset:") == 0)
+		{
+			fscanf(file, "%s %i,%i,%i", reader, &framew, &frameh, &framesperline);
+			if (strlen(reader) > 0)
+			{
+				map->tileset = gf2d_sprite_load_all(reader, framew, frameh, framesperline);
+			}
+			continue;
+		}
+		if (strcmp(reader, "map_begin") == 0)
+		{
+			if ((map->width * map->height) == 0)
+			{
+				slog("width and height need be defined before starting the tile map");
+				tilemap_free(map);
+				fclose(file);
+				return NULL;
+			}
+			map->map = (char *)malloc(sizeof(char) * map->width * map->height);
+			if (!map->map)
+			{
+				slog("failed to allocate data for map tile data");
+				tilemap_free(map);
+				fclose(file);
+				return NULL;
+			}
+			memset(map->map, 0, sizeof(char) * map->width * map->height);
+			while (fscanf(file, "%s", reader) != EOF)
+			{
+				if (reader[0] == '#')
+				{
+					continue;
+				}
+				if (strcmp("map_end", reader) == 0)
+				{
+					break;
+				}
+				strcat(map->map, reader);
+			}
+			continue;
+		}
+	}
+	fclose(file);
+	pqlist_insert(map_list, map, 1);
+	return map;
+}
 
+int map_list_init()
+{
+	map_list = pqlist_new();
+	if (!map_list)
+	{
+		slog("unable to allocate map_list data");
+		return 0;
+	}
+	return 1;
 }
 
 void config_loader_levels(char *filename)
@@ -121,8 +230,8 @@ void config_loader_levels(char *filename)
 	// should use some linked list struct to define the order of levels
 	// should use some list struct to add an unknown number of map configurations
 	FILE *levelFile = fopen(filename, "r");
-	char param[255];
-	char input[255];
+	char param[1024];
+	char input[1024];
 
 	slog("config loading levels");
 	if (!levelFile)
@@ -130,17 +239,15 @@ void config_loader_levels(char *filename)
 		perror(filename);
 		return;
 	}
+	if (map_list_init() == 0)
+		return;
 	while (fscanf(levelFile, "%s %s", param, input) != EOF)
 	{
 		if (strcmp(param, "map:") == 0)
+		{
 			config_loader_map_init(input);
+		}
 	}
 	
 	fclose(levelFile);
 }
-
-FunctionParser funct[] =
-{
-	{ player_update, "player_update" },
-	{ clickerUpdate, "clickerUpdate" }
-};
