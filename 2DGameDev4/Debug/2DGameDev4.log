@@ -1,19 +1,16 @@
 ﻿  entity.c
 c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(22): warning C4018: '<': signed/unsigned mismatch
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(69): warning C4018: '<': signed/unsigned mismatch
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(86): warning C4133: '=': incompatible types - from 'double *' to 'Sint16 *'
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(92): warning C4133: '=': incompatible types - from 'double *' to 'Sint16 *'
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(115): warning C4244: 'function': conversion from 'double' to 'Sint16', possible loss of data
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(123): warning C4244: 'function': conversion from 'double' to 'Sint16', possible loss of data
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(60): warning C4101: 'xtri': unreferenced local variable
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(63): warning C4101: 'newEnd': unreferenced local variable
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(62): warning C4101: 'rotated': unreferenced local variable
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(60): warning C4101: 'ytri': unreferenced local variable
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(140): warning C4018: '<': signed/unsigned mismatch
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(202): warning C4113: 'void (__cdecl *)()' differs in parameter lists from 'void (__cdecl *)(void)'
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(190): warning C4101: 'i': unreferenced local variable
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(209): warning C4018: '<': signed/unsigned mismatch
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(239): warning C4018: '<': signed/unsigned mismatch
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(261): warning C4305: '+=': truncation from 'double' to 'float'
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(288): warning C4018: '<': signed/unsigned mismatch
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(68): warning C4018: '<': signed/unsigned mismatch
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(96): warning C4133: '=': incompatible types - from 'double *' to 'Sint16 *'
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(102): warning C4133: '=': incompatible types - from 'double *' to 'Sint16 *'
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(122): warning C4244: 'function': conversion from 'double' to 'Sint16', possible loss of data
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(132): warning C4244: 'function': conversion from 'double' to 'Sint16', possible loss of data
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(61): warning C4101: 'rotated': unreferenced local variable
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(149): warning C4018: '<': signed/unsigned mismatch
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(212): warning C4113: 'void (__cdecl *)()' differs in parameter lists from 'void (__cdecl *)(void)'
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(200): warning C4101: 'i': unreferenced local variable
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(219): warning C4018: '<': signed/unsigned mismatch
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(249): warning C4018: '<': signed/unsigned mismatch
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(271): warning C4305: '+=': truncation from 'double' to 'float'
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(298): warning C4018: '<': signed/unsigned mismatch
   2DGameDev4.vcxproj -> C:\Users\Brando\Documents\Visual Studio 2015\Projects\2DGameDev4\Debug\2DGameDev4.exe

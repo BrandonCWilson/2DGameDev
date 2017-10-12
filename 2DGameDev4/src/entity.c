@@ -57,10 +57,9 @@ void draw_line_of_sight(Entity *self, int layer)
 {
 	int i, j, numPoints;
 	Sint16 *x, *y;
-	Sint16 xtri[3], ytri[3];
 	Vector2D dir;
 	Vector2D rotated;
-	Vector2D newEnd;
+	Vector2D end;
 	RaycastHit *hit = NULL;
 	PriorityQueueList *pts;
 	if (!self) return;
@@ -73,11 +72,22 @@ void draw_line_of_sight(Entity *self, int layer)
 		if (entity_manager.ent_list[i].layer != layer) continue;
 		for (j = 0; j < 4; j++)
 		{
-			hit = raycast_through_all_entities(self->position, entity_manager.ent_list[i].coll->corners[j], layer);
+			vector2d_sub(dir, entity_manager.ent_list[i].coll->corners[j], self->position); 
+			end = entity_manager.ent_list[i].coll->corners[j];
+			vector2d_set_magnitude(&dir, 200);
+			vector2d_add(end, dir, self->position);
+			//end = dir;
+			hit = raycast_through_all_entities(self->position, end, layer);
+			//hit = raycast_through_all_entities(self->position, entity_manager.ent_list[i].coll->corners[j], layer);
 			if (!hit)
 				continue;
-			if (hit->hitpoint.x != entity_manager.ent_list[i].coll->corners[j].x) continue;
-			if (hit->hitpoint.y != entity_manager.ent_list[i].coll->corners[j].y) continue;
+			if (hit->other == NULL)
+			{
+				gf2d_draw_line(self->position, hit->hitpoint, vector4d(0,255,0,255));
+			}
+			if (((hit->hitpoint.x != entity_manager.ent_list[i].coll->corners[j].x)
+			|| (hit->hitpoint.y != entity_manager.ent_list[i].coll->corners[j].y))
+			&& (hit->other != NULL)) continue;
 			vector2d_sub(dir, hit->hitpoint, self->position);
 			pqlist_insert(pts, hit, vector2d_angle(dir));
 		}
@@ -103,22 +113,21 @@ void draw_line_of_sight(Entity *self, int layer)
 	{
 		x[i] = (Sint16)hit->hitpoint.x;
 		y[i] = (Sint16)hit->hitpoint.y;
-		//gf2d_draw_line(self->position, vector2d(x[i], y[i]), vector4d(25, 255, 255, 255));
+		if (i > 0)
+		{
+			filledTrigonRGBA(
+				gf2d_graphics_get_renderer(),
+				x[i], y[i],
+				x[i - 1], y[i - 1],
+				self->position.x, self->position.y,
+				10, 10, 10, 100
+				);
+		}
 		i++;
-	}
-	for (i = 0; i < numPoints - 1; i++)
-	{
-		filledTrigonRGBA(
-			gf2d_graphics_get_renderer(),
-			x[i], y[i],
-			x[i + 1], y[i + 1],
-			self->position.x, self->position.y,
-			10, 10, 10, 100
-			);
 	}
 	filledTrigonRGBA(
 		gf2d_graphics_get_renderer(),
-		x[i], y[i],
+		x[i - 1], y[i - 1],
 		x[0], y[0],
 		self->position.x, self->position.y,
 		10, 10, 10, 100
@@ -180,7 +189,8 @@ RaycastHit *raycast_through_all_entities(Vector2D start, Vector2D direction, int
 			slog("Unable to allocate a new raycasthit");
 			return NULL;
 		}
-		vector2d_add(rtn->hitpoint, start, direction);
+		rtn->hitpoint = direction;
+		rtn->other = NULL;
 	}
 	return rtn;
 }

@@ -3,9 +3,9 @@
 
 int get_line_intersection(Vector2D Apos, Vector2D Adir, Vector2D Bpos, Vector2D Bdir, Vector2D *out)
 {
-	float s1_x, s1_y, s2_x, s2_y;
-	float s, t;
-	float sDenom, tDenom;
+	double s1_x, s1_y, s2_x, s2_y;
+	double s, t;
+	double sDenom, tDenom;
 	s1_x = Adir.x - Apos.x;     s1_y = Adir.y - Apos.y;
 	s2_x = Bdir.x - Bpos.x;     s2_y = Bdir.y - Bpos.y;
 	sDenom = (-s2_x * s1_y + s1_x * s2_y);
