@@ -53,5 +53,5 @@ void player_update(Entity *self)
 			}
 		}
 	}
-	draw_line_of_sight(self, 1);
+	draw_line_of_sight(self, 1, 45.0);
 }

@@ -53,18 +53,32 @@ void entitiy_update_all_colliders()
 	}
 }
 
-void draw_line_of_sight(Entity *self, int layer)
+void draw_line_of_sight(Entity *self, int layer, double fov)
 {
 	int i, j, numPoints;
 	Sint16 *x, *y;
 	Vector2D dir;
 	Vector2D rotated;
 	Vector2D end;
+	Vector2D hitdiff;
 	RaycastHit *hit = NULL;
 	PriorityQueueList *pts;
 	if (!self) return;
 	pts = pqlist_new();
 	if (!pts) return;
+	// add the start and end of the fov
+	dir = vector2d(-200, 0);
+	vector2d_add(end, self->position, dir);
+	hit = raycast_through_all_entities(self->position, end, layer);
+	if (!hit) return;
+	vector2d_sub(hitdiff, hit->hitpoint, self->position);
+	pqlist_insert(pts, hit, vector2d_angle(hitdiff));
+	rotated = vector2d_rotate(dir, fov);
+	vector2d_add(end, self->position, rotated);
+	hit = raycast_through_all_entities(self->position, end, layer);
+	if (!hit) return;
+	vector2d_sub(hitdiff, hit->hitpoint, self->position);
+	pqlist_insert(pts, hit, vector2d_angle(hitdiff));
 	for (i = 0; i < entity_manager.max_entities; i++)
 	{
 		if (!entity_manager.ent_list[i].inUse) continue;
@@ -72,66 +86,94 @@ void draw_line_of_sight(Entity *self, int layer)
 		if (entity_manager.ent_list[i].layer != layer) continue;
 		for (j = 0; j < 4; j++)
 		{
-			vector2d_sub(dir, entity_manager.ent_list[i].coll->corners[j], self->position); 
+			vector2d_sub(dir, entity_manager.ent_list[i].coll->corners[j], self->position);
 			end = entity_manager.ent_list[i].coll->corners[j];
+			if (vector2d_angle(dir) > fov - 180) continue;
 			vector2d_set_magnitude(&dir, 200);
 			vector2d_add(end, dir, self->position);
-			//end = dir;
 			hit = raycast_through_all_entities(self->position, end, layer);
-			//hit = raycast_through_all_entities(self->position, entity_manager.ent_list[i].coll->corners[j], layer);
 			if (!hit)
 				continue;
-			if (hit->other == NULL)
+			vector2d_sub(hitdiff, hit->hitpoint, self->position);
+			pqlist_insert(pts, hit, vector2d_angle(hitdiff));
+			if ((hit->hitpoint.x == entity_manager.ent_list[i].coll->corners[j].x)
+				&& (hit->hitpoint.y == entity_manager.ent_list[i].coll->corners[j].y))
 			{
-				gf2d_draw_line(self->position, hit->hitpoint, vector4d(0,255,0,255));
+				end = entity_manager.ent_list[i].coll->corners[j];
+				vector2d_set_magnitude(&dir, 200);
+				dir = vector2d_rotate(dir, 0.01);
+				vector2d_add(end, dir, self->position);
+				hit = raycast_through_all_entities(self->position, end, layer);
+				if (!hit) continue;
+				vector2d_sub(hitdiff, hit->hitpoint, self->position);
+				pqlist_insert(pts, hit, vector2d_angle(hitdiff)); 
+				end = entity_manager.ent_list[i].coll->corners[j];
+				vector2d_set_magnitude(&dir, 200);
+				dir = vector2d_rotate(dir, -0.02);
+				vector2d_add(end, dir, self->position);
+				hit = raycast_through_all_entities(self->position, end, layer);
+				if (!hit) continue;
+				vector2d_sub(hitdiff, hit->hitpoint, self->position);
+				pqlist_insert(pts, hit, vector2d_angle(hitdiff));
 			}
-			if (((hit->hitpoint.x != entity_manager.ent_list[i].coll->corners[j].x)
-			|| (hit->hitpoint.y != entity_manager.ent_list[i].coll->corners[j].y))
-			&& (hit->other != NULL)) continue;
-			vector2d_sub(dir, hit->hitpoint, self->position);
-			pqlist_insert(pts, hit, vector2d_angle(dir));
 		}
 	}
 	numPoints = pqlist_get_size(pts);
-	x = (double *)malloc(sizeof(Sint16)*numPoints);
+	x = (double *)malloc(sizeof(Sint16)*(numPoints));
 	if (!x)
 	{
 		pqlist_free(pts, raycasthit_free);
 		return;
 	}
-	y = (double *)malloc(sizeof(Sint16)*numPoints);
+	y = (double *)malloc(sizeof(Sint16)*(numPoints));
 	if (!y)
 	{
 		pqlist_free(pts, raycasthit_free);
 		free(x);
 		return;
 	}
-	memset(x, 0, sizeof(Sint16)*numPoints);
-	memset(y, 0, sizeof(Sint16)*numPoints);
+	memset(x, 0, sizeof(Sint16)*(numPoints)); memset(y, 0, sizeof(Sint16)*(numPoints));
 	i = 0;
 	for (hit = pqlist_delete_max(pts); hit != NULL; hit = pqlist_delete_max(pts))
 	{
+		if ((i == 0) && (hit->other == NULL))
+			j = 1;
+		else
+			j = 0;
 		x[i] = (Sint16)hit->hitpoint.x;
 		y[i] = (Sint16)hit->hitpoint.y;
 		if (i > 0)
 		{
-			filledTrigonRGBA(
-				gf2d_graphics_get_renderer(),
-				x[i], y[i],
-				x[i - 1], y[i - 1],
-				self->position.x, self->position.y,
-				10, 10, 10, 100
-				);
+			if (hit->other == NULL)
+			{
+				vector2d_sub(dir, vector2d(x[i - 1], y[i - 1]), self->position);
+				vector2d_sub(end, vector2d(x[i], y[i]), self->position);
+				if ((vector2d_angle(end) - vector2d_angle(dir) < fov) && ((vector2d_angle(end) - vector2d_angle(dir) > -fov)))
+				{
+					filledPieRGBA(
+						gf2d_graphics_get_renderer(),
+						self->position.x, self->position.y,
+						vector2d_magnitude(end),
+						vector2d_angle(end),
+						vector2d_angle(dir),
+						10, 255, 10, 100
+						);
+				}
+			}
+			else
+			{
+				filledTrigonRGBA(
+					gf2d_graphics_get_renderer(),
+					x[i - 1], y[i - 1],
+					x[i], y[i],
+					self->position.x, self->position.y,
+					10, 255, 10, 100
+					);
+			}
 		}
+		raycasthit_free(hit);
 		i++;
 	}
-	filledTrigonRGBA(
-		gf2d_graphics_get_renderer(),
-		x[i - 1], y[i - 1],
-		x[0], y[0],
-		self->position.x, self->position.y,
-		10, 10, 10, 100
-		);
 	pqlist_free(pts, raycasthit_free);
 	free(x);
 	free(y);

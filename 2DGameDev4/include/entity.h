@@ -40,7 +40,7 @@ void entity_free(Entity *ent);
 
 void entity_update_all();
 
-void draw_line_of_sight(Entity *self, int layer);
+void draw_line_of_sight(Entity *self, int layer, double fov);
 
 RaycastHit *raycast_through_all_entities(Vector2D start, Vector2D direction, int layer);
 
