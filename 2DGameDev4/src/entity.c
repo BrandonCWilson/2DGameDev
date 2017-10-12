@@ -61,6 +61,8 @@ void draw_line_of_sight(Entity *self, int layer, double fov)
 	Vector2D rotated;
 	Vector2D end;
 	Vector2D hitdiff;
+	float initialAngle;
+	float endAngle;
 	RaycastHit *hit = NULL;
 	PriorityQueueList *pts;
 	if (!self) return;
@@ -68,16 +70,25 @@ void draw_line_of_sight(Entity *self, int layer, double fov)
 	if (!pts) return;
 	// add the start and end of the fov
 	dir = vector2d(-200, 0);
+	rotated = vector2d_rotate(dir, fov * GF2D_PI / 180);
+	initialAngle = vector2d_angle(dir);
+	endAngle = vector2d_angle(rotated);
+	slog("end - initial: %f", endAngle - initialAngle);
+	slog("%f", fov);
 	vector2d_add(end, self->position, dir);
 	hit = raycast_through_all_entities(self->position, end, layer);
 	if (!hit) return;
 	vector2d_sub(hitdiff, hit->hitpoint, self->position);
+	gf2d_draw_line(self->position, hit->hitpoint, vector4d(255, 0, 0, 255));
+	initialAngle = vector2d_angle(dir);
 	pqlist_insert(pts, hit, vector2d_angle(hitdiff));
 	rotated = vector2d_rotate(dir, fov);
 	vector2d_add(end, self->position, rotated);
 	hit = raycast_through_all_entities(self->position, end, layer);
 	if (!hit) return;
 	vector2d_sub(hitdiff, hit->hitpoint, self->position);
+	gf2d_draw_line(self->position, hit->hitpoint, vector4d(255, 0, 0, 255));
+	endAngle = vector2d_angle(rotated);
 	pqlist_insert(pts, hit, vector2d_angle(hitdiff));
 	for (i = 0; i < entity_manager.max_entities; i++)
 	{
@@ -88,13 +99,14 @@ void draw_line_of_sight(Entity *self, int layer, double fov)
 		{
 			vector2d_sub(dir, entity_manager.ent_list[i].coll->corners[j], self->position);
 			end = entity_manager.ent_list[i].coll->corners[j];
-			if (vector2d_angle(dir) > fov - 180) continue;
+			if ((vector2d_angle(dir) < initialAngle)||(vector2d_angle(dir) > endAngle)) continue;
 			vector2d_set_magnitude(&dir, 200);
 			vector2d_add(end, dir, self->position);
 			hit = raycast_through_all_entities(self->position, end, layer);
 			if (!hit)
 				continue;
 			vector2d_sub(hitdiff, hit->hitpoint, self->position);
+			gf2d_draw_line(self->position, hit->hitpoint, vector4d(0, 255, 255, 255));
 			pqlist_insert(pts, hit, vector2d_angle(hitdiff));
 			if ((hit->hitpoint.x == entity_manager.ent_list[i].coll->corners[j].x)
 				&& (hit->hitpoint.y == entity_manager.ent_list[i].coll->corners[j].y))
@@ -170,6 +182,7 @@ void draw_line_of_sight(Entity *self, int layer, double fov)
 					10, 255, 10, 100
 					);
 			}
+
 		}
 		raycasthit_free(hit);
 		i++;
