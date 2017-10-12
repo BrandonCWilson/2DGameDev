@@ -135,7 +135,7 @@ RaycastHit *raycast_through_all_entities(Vector2D start, Vector2D direction, int
 	float min = FLT_MAX;
 	float dist;
 	int i, j;
-	Vector2D v1, v2;
+	Vector2D v1, v2, diff;
 
 	for (i = 0; i < entity_manager.max_entities; i++)
 	{
@@ -148,10 +148,14 @@ RaycastHit *raycast_through_all_entities(Vector2D start, Vector2D direction, int
 			for (j = 0; j < 4; j++)
 			{
 				v1 = entity_manager.ent_list[i].coll->corners[j];
+				vector2d_sub(diff, direction, start);
 				if (j == 3)
 					v2 = entity_manager.ent_list[i].coll->corners[0];
 				else
 					v2 = entity_manager.ent_list[i].coll->corners[j + 1];
+				if ((((diff.x > 0) && (v1.x <= start.x) && (v2.x <= start.x)) || ((diff.y > 0) && (v1.y <= start.y) && (v2.y <= start.y))) ||
+					(((diff.x < 0) && (v1.x >= start.x) && (v2.x >= start.x)) || ((diff.y < 0) && (v1.y >= start.y) && (v2.y >= start.y))))
+					continue;
 				hit = raycast(start, direction, v1, v2);
 				if (!hit)
 					continue;
