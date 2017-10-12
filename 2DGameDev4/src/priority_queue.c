@@ -14,7 +14,14 @@ PriorityNode *pqlist_new_node()
 	return node;
 }
 
-int pqlist_free_node(PriorityNode *node)
+void pq_free_node(PriorityNode *pnode)
+{
+	if (!pnode)
+		return;
+	free(pnode);
+}
+
+int pqlist_free_node_with_fuction(PriorityNode *node, void(*f)(void *))
 {
 	if (!node)
 	{
@@ -23,12 +30,52 @@ int pqlist_free_node(PriorityNode *node)
 	}
 	if (node->data != NULL)
 	{
-		//slog("attempting to free a node that points to data");
-		// here's a gun, free whatever ya want
-		//return -1;
+		if (!f) return -1;
+		slog("fine i'll free your shit");
+		f(node->data);
+		slog("your shit is free");
 	}
 	free(node);
 	return 0;
+}
+
+int pqlist_free_node(PriorityNode *node)
+{
+	if (!node)
+	{
+		slog("a null node was passed to free_node");
+		return -2;
+	}
+	free(node);
+	return 0;
+}
+
+void pqlist_free(PriorityQueueList *pq, void(*f)(void *))
+{
+	PriorityNode *cursor, *tmp;
+	if (!pq) return;
+	cursor = pq->head;
+	while (cursor != NULL)
+	{
+		tmp = cursor;
+		cursor = cursor->next;
+		pqlist_free_node_with_fuction(tmp, f);
+	}
+	free(pq);
+}
+
+int pqlist_get_size(PriorityQueueList *pq)
+{
+	int size = 0;
+	PriorityNode *cursor = NULL;
+	if (!pq) return NULL;
+	cursor = pq->head;
+	while (cursor != NULL)
+	{
+		cursor = cursor->next;
+		size++;
+	}
+	return size;
 }
 
 void *pqlist_delete_max(PriorityQueueList *pq)
@@ -44,13 +91,13 @@ void *pqlist_delete_max(PriorityQueueList *pq)
 	}
 	if (pq->head == NULL)
 		return NULL;
-	if(pq->head->next)
+	if (pq->head->next)
 	{
 		tmp = pq->head;
 		max = pq->head;
 		while (tmp->next != NULL)
 		{
-			if ((int)max->priority < (int)tmp->next->priority)
+			if (max->priority < tmp->next->priority)
 			{
 				prev = tmp;
 				max = tmp->next;
@@ -99,18 +146,7 @@ void *pqlist_delete(PriorityQueueList *pq)
 	pqlist_free_node(tmp);
 }
 
-void pqlist_free_list(PriorityQueueList *pq)
-{
-	while (true)
-	{
-		// pop nodes off the list arbitrarily until it is empty
-		if (!pqlist_delete(pq))
-			break;
-	}
-	free(pq);
-}
-
-void pqlist_insert(PriorityQueueList *pq, void *data, int priority)
+void pqlist_insert(PriorityQueueList *pq, void *data, double priority)
 {
 	PriorityNode *pn;
 	if (!pq)
@@ -161,17 +197,10 @@ void pq_delete(PriorityNode *pnode)
 {
 	if (!pnode)
 		return;
-	memset(pnode,NULL,sizeof(PriorityNode));
+	memset(pnode, NULL, sizeof(PriorityNode));
 }
 
-void pq_free_node(PriorityNode *pnode)
-{
-	if (!pnode)
-		return;
-	free(pnode);
-}
-
-void pq_free_queue(PriorityQueue *pq) 
+void pq_free_queue(PriorityQueue *pq)
 {
 	int i;
 	if (!pq)
@@ -213,7 +242,7 @@ void *pq_delete_max(PriorityQueue *pq)
 }
 
 
-void pq_insert(PriorityQueue *pq, void *data, int priority) 
+void pq_insert(PriorityQueue *pq, void *data, double priority)
 {
 	int i;
 

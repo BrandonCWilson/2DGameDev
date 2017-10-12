@@ -49,7 +49,7 @@ void tilemap_free(TileMap *tilemap)
 
 void tilemap_load_walls(TileMap *tilemap, Vector2D position)
 {
-	int i, j;
+	int i, j, length;
 	Entity *ent;
 	char *wallname;
 	if (!tilemap)return;
@@ -74,11 +74,20 @@ void tilemap_load_walls(TileMap *tilemap, Vector2D position)
 					slog("Error allocating new collider");
 					return NULL;
 				}
-				ent->coll->width = tilemap->tileset->frame_w;
+				// find the biggest rectangle, try to minimize walls
+				length = 0;
+				while (tilemap->map[(j*tilemap->width) + i] != '0')
+				{
+					length++;
+					i++;
+					if (i >= tilemap->width) break;
+				}
+				ent->coll->width = tilemap->tileset->frame_w * length;
 				ent->coll->height = tilemap->tileset->frame_h;
 				ent->coll->parent = ent;
 				sprintf(ent->name, "%s (%i)", "Wall", ((j*tilemap->width) + i));
-				ent->sprite = tilemap->tileset;
+				//ent->sprite = tilemap->tileset;
+				ent->layer = 1;
 			}
 		}
 	}
@@ -175,7 +184,7 @@ TileMap *tilemap_load(char *filename)
 	return tilemap;
 }
 
-void tilemap_draw(TileMap *tilemap, Vector2D position)
+void tilemap_draw_walkable(TileMap *tilemap, Vector2D position)
 {
 	int i, j;
 	if (!tilemap)return;
@@ -185,6 +194,33 @@ void tilemap_draw(TileMap *tilemap, Vector2D position)
 	{
 		for (i = 0; i < tilemap->width; i++)
 		{
+			if (tilemap->map[(j * tilemap->width) + i] != '0')
+				continue;
+			gf2d_sprite_draw(
+				tilemap->tileset,
+				vector2d(position.x + (i * tilemap->tileset->frame_w), position.y + (j * tilemap->tileset->frame_h)),
+				NULL,
+				NULL,
+				NULL,
+				NULL,
+				NULL,
+				tilemap->map[(j * tilemap->width) + i] - '0');
+		}
+	}
+}
+
+void tilemap_draw_walls(TileMap *tilemap, Vector2D position)
+{
+	int i, j;
+	if (!tilemap)return;
+	if (!tilemap->map)return;
+	if (!tilemap->tileset)return;
+	for (j = 0; j < tilemap->height; j++)
+	{
+		for (i = 0; i < tilemap->width; i++)
+		{
+			if (tilemap->map[(j * tilemap->width) + i] == '0')
+				continue;
 			gf2d_sprite_draw(
 				tilemap->tileset,
 				vector2d(position.x + (i * tilemap->tileset->frame_w), position.y + (j * tilemap->tileset->frame_h)),

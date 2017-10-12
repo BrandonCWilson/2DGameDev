@@ -10,7 +10,7 @@
 typedef struct Entity_s
 {
 	bool inUse;
-
+	int layer;
 	char name[255];
 	int timer;
 	Vector2D position;
@@ -40,7 +40,9 @@ void entity_free(Entity *ent);
 
 void entity_update_all();
 
-RaycastHit *raycast_through_all_entities(Vector2D start, Vector2D direction);
+void draw_line_of_sight(Entity *self, int layer);
+
+RaycastHit *raycast_through_all_entities(Vector2D start, Vector2D direction, int layer);
 
 void entity_draw(Entity *ent);
 

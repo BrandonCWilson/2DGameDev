@@ -3,6 +3,9 @@
 #include "priority_queue.h"
 #include "raycast.h"
 #include "gf2d_draw.h"
+#include <float.h>
+#include <SDL2_gfxPrimitives.h>
+#include "gf2d_graphics.h"
 
 typedef struct
 {
@@ -24,11 +27,11 @@ void entitiy_update_all_colliders()
 			continue;
 		for (j = 0; j < 4; j++)
 		{
-			vector2d_add(entity_manager.ent_list[i].coll->corners[j], 
-				entity_manager.ent_list[i].position, 
+			vector2d_add(entity_manager.ent_list[i].coll->corners[j],
+				entity_manager.ent_list[i].position,
 				vector2d(
 					entity_manager.ent_list[i].coll->width * ((j > 1) ? 0 : 1),
-					entity_manager.ent_list[i].coll->height * ((j % 3 > 0) ? 0: 1))
+					entity_manager.ent_list[i].coll->height * ((j % 3 > 0) ? 0 : 1))
 				);
 		}
 		gf2d_draw_line(
@@ -50,23 +53,95 @@ void entitiy_update_all_colliders()
 	}
 }
 
-RaycastHit *raycast_through_all_entities(Vector2D start, Vector2D direction)
+void draw_line_of_sight(Entity *self, int layer)
+{
+	int i, j, numPoints;
+	Sint16 *x, *y;
+	Sint16 xtri[3], ytri[3];
+	Vector2D dir;
+	Vector2D rotated;
+	Vector2D newEnd;
+	RaycastHit *hit = NULL;
+	PriorityQueueList *pts;
+	if (!self) return;
+	pts = pqlist_new();
+	if (!pts) return;
+	for (i = 0; i < entity_manager.max_entities; i++)
+	{
+		if (!entity_manager.ent_list[i].inUse) continue;
+		if (!entity_manager.ent_list[i].coll) continue;
+		if (entity_manager.ent_list[i].layer != layer) continue;
+		for (j = 0; j < 4; j++)
+		{
+			hit = raycast_through_all_entities(self->position, entity_manager.ent_list[i].coll->corners[j], layer);
+			if (!hit)
+				continue;
+			if (hit->hitpoint.x != entity_manager.ent_list[i].coll->corners[j].x) continue;
+			if (hit->hitpoint.y != entity_manager.ent_list[i].coll->corners[j].y) continue;
+			vector2d_sub(dir, hit->hitpoint, self->position);
+			pqlist_insert(pts, hit, vector2d_angle(dir));
+		}
+	}
+	numPoints = pqlist_get_size(pts);
+	x = (double *)malloc(sizeof(Sint16)*numPoints);
+	if (!x)
+	{
+		pqlist_free(pts, raycasthit_free);
+		return;
+	}
+	y = (double *)malloc(sizeof(Sint16)*numPoints);
+	if (!y)
+	{
+		pqlist_free(pts, raycasthit_free);
+		free(x);
+		return;
+	}
+	memset(x, 0, sizeof(Sint16)*numPoints);
+	memset(y, 0, sizeof(Sint16)*numPoints);
+	i = 0;
+	for (hit = pqlist_delete_max(pts); hit != NULL; hit = pqlist_delete_max(pts))
+	{
+		x[i] = (Sint16)hit->hitpoint.x;
+		y[i] = (Sint16)hit->hitpoint.y;
+		//gf2d_draw_line(self->position, vector2d(x[i], y[i]), vector4d(25, 255, 255, 255));
+		i++;
+	}
+	for (i = 0; i < numPoints - 1; i++)
+	{
+		filledTrigonRGBA(
+			gf2d_graphics_get_renderer(),
+			x[i], y[i],
+			x[i + 1], y[i + 1],
+			self->position.x, self->position.y,
+			10, 10, 10, 100
+			);
+	}
+	filledTrigonRGBA(
+		gf2d_graphics_get_renderer(),
+		x[i], y[i],
+		x[0], y[0],
+		self->position.x, self->position.y,
+		10, 10, 10, 100
+		);
+	pqlist_free(pts, raycasthit_free);
+	free(x);
+	free(y);
+}
+
+RaycastHit *raycast_through_all_entities(Vector2D start, Vector2D direction, int layer)
 {
 	RaycastHit *hit = NULL;
-	PriorityQueueList *hitlist;
-	RaycastHit *tmp;
+	RaycastHit *rtn = NULL;
+	float min = FLT_MAX;
+	float dist;
 	int i, j;
 	Vector2D v1, v2;
-	hitlist = pqlist_new();
-	if (!hitlist)
-	{
-		slog("unable to initialize a hitlist");
-		return NULL;
-	}
 
 	for (i = 0; i < entity_manager.max_entities; i++)
 	{
 		if (entity_manager.ent_list[i].inUse == false)
+			continue;
+		if (entity_manager.ent_list[i].layer != layer)
 			continue;
 		if (entity_manager.ent_list[i].coll != NULL)
 		{
@@ -82,29 +157,28 @@ RaycastHit *raycast_through_all_entities(Vector2D start, Vector2D direction)
 					continue;
 				hit->other = entity_manager.ent_list[i].coll;
 				vector2d_sub(v1, start, hit->hitpoint);
-				pqlist_insert(hitlist, hit, vector2d_magnitude_squared(v1) * -1);
+				dist = vector2d_magnitude_squared(v1);
+				if (dist < min)
+				{
+					min = dist;
+					rtn = hit;
+				}
+				else
+					raycasthit_free(hit);
 			}
 		}
 	}
-	hit = pqlist_delete_max(hitlist);
-	if (!hit)
+	if (!rtn)
 	{
-		hit = raycasthit_new();
-		if (!hit)
+		rtn = raycasthit_new();
+		if (!rtn)
 		{
 			slog("Unable to allocate a new raycasthit");
 			return NULL;
 		}
-		hit->hitpoint = direction;
+		vector2d_add(rtn->hitpoint, start, direction);
 	}
-	tmp = pqlist_delete_max(hitlist);
-	// clean up memory allocations
-	while (tmp != NULL)
-	{
-		raycasthit_free(tmp);
-		tmp = pqlist_delete_max(hitlist);
-	}
-	return hit;
+	return rtn;
 }
 
 void entity_system_init(Uint32 max)
@@ -156,13 +230,13 @@ void entity_free(Entity *ent)
 
 void entity_update_all()
 {
-	int i; 
+	int i;
 	entitiy_update_all_colliders();
 	for (i = 0; i < entity_manager.max_entities; i++)
 	{
 		if (entity_manager.ent_list[i].inUse)
 		{
-			
+
 			vector2d_add(entity_manager.ent_list[i].position, entity_manager.ent_list[i].position, entity_manager.ent_list[i].velocity);
 
 			// handle the entity think functions
@@ -170,7 +244,7 @@ void entity_update_all()
 			{
 				// no update function ..
 			}
-			else 
+			else
 			{
 				entity_manager.ent_list[i].update(&entity_manager.ent_list[i]);
 			}

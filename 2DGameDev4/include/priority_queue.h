@@ -5,7 +5,7 @@
 typedef struct PriorityNode_S
 {
 	void *data;
-	int *priority;
+	double priority;
 	struct PriorityNode_S *next;
 }PriorityNode;
 
@@ -52,7 +52,7 @@ void *pq_delete_max(PriorityQueue *pq);
 @param data the data to be inserted
 @param priority the priority level of the data
 */
-void pq_insert(PriorityQueue *pq, void *data, int priority);
+void pq_insert(PriorityQueue *pq, void *data, double priority);
 
 /*
 @brief pop off the maximum priority data from the list
@@ -73,7 +73,11 @@ PriorityQueueList *pqlist_new();
 @param data the data to be inserted
 @param priority the priority level of the data
 */
-void pqlist_insert(PriorityQueueList *pqlist, void *data, int priority);
+void pqlist_insert(PriorityQueueList *pqlist, void *data, double priority);
+
+int pqlist_get_size(PriorityQueueList *pqlist);
+
+void pqlist_free(PriorityQueueList *pq, void(*free_data)(void *));
 
 #endif
 #pragma once

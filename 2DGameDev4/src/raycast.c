@@ -47,7 +47,7 @@ RaycastHit *raycasthit_new()
 
 RaycastHit *raycast(Vector2D start1, Vector2D direction1, Vector2D start2, Vector2D direction2)
 {
-	Vector2D hit;
+	Vector2D hitpoint;
 	RaycastHit *rtn;
 	rtn = raycasthit_new();
 	if (!rtn)
@@ -55,10 +55,11 @@ RaycastHit *raycast(Vector2D start1, Vector2D direction1, Vector2D start2, Vecto
 		slog("unable to allocate raycasthit");
 		return NULL;
 	}
-	if (get_line_intersection(start1, direction1, start2, direction2, &hit) == 1)
+	if (get_line_intersection(start1, direction1, start2, direction2, &hitpoint) == 1)
 	{
-		rtn->hitpoint = hit;
+		rtn->hitpoint = hitpoint;
 		return rtn;
 	}
+	raycasthit_free(rtn);
 	return NULL;
 }

@@ -28,9 +28,11 @@ void player_init(Entity *self)
 void player_update(Entity *self)
 {
 	Entity *clickEnt;
+	int mx, my;
 	if (!controller)
 	{
-
+		SDL_GetMouseState(&mx, &my);
+		self->position = vector2d(mx, my);
 	}
 	else
 	{
@@ -51,4 +53,5 @@ void player_update(Entity *self)
 			}
 		}
 	}
+	draw_line_of_sight(self, 1);
 }

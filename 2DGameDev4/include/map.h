@@ -20,7 +20,9 @@ void draw_map(Map *m);
 
 TileMap *tilemap_load(char *filename);
 
-void tilemap_draw(TileMap *tilemap, Vector2D position);
+void tilemap_draw_walkable(TileMap *tilemap, Vector2D position);
+
+void tilemap_draw_walls(TileMap *tilemap, Vector2D position);
 
 void tilemap_load_walls(TileMap *tilemap, Vector2D position);
 #endif

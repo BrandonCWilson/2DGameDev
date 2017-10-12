@@ -14,5 +14,5 @@ void raycasthit_free(RaycastHit *hit);
 
 RaycastHit *raycasthit_new();
 
-RaycastHit *raycast(Vector2D start1, Vector2D direction1, Vector2D start2, Vector2D direction2);
+RaycastHit *raycast(Vector2D start1, Vector2D dir1, Vector2D start2, Vector2D dir2);
 #endif

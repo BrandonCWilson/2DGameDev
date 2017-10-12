@@ -1,6 +1,7 @@
-﻿  game.c
-c:\users\brando\git\gameframework2d-master\src\game.c(100): warning C4305: '+=': truncation from 'double' to 'float'
-c:\users\brando\git\gameframework2d-master\src\game.c(41): warning C4101: 'm': unreferenced local variable
-c:\users\brando\git\gameframework2d-master\src\game.c(39): warning C4101: 'j': unreferenced local variable
-c:\users\brando\git\gameframework2d-master\src\game.c(38): warning C4101: 'i': unreferenced local variable
+﻿  raycast.c
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\raycast.c(9): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\raycast.c(10): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\raycast.c(15): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\raycast.c(16): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\raycast.c(44): warning C4013: 'memset' undefined; assuming extern returning int
   2DGameDev4.vcxproj -> C:\Users\Brando\Documents\Visual Studio 2015\Projects\2DGameDev4\Debug\2DGameDev4.exe
