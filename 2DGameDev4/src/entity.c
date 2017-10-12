@@ -61,8 +61,8 @@ void draw_line_of_sight(Entity *self, int layer, double fov)
 	Vector2D rotated;
 	Vector2D end;
 	Vector2D hitdiff;
-	float initialAngle;
-	float endAngle;
+	float initialAngle, endAngle;
+	Vector2D initialHitpoint, endHitpoint;
 	RaycastHit *hit = NULL;
 	PriorityQueueList *pts;
 	if (!self) return;
@@ -71,24 +71,21 @@ void draw_line_of_sight(Entity *self, int layer, double fov)
 	// add the start and end of the fov
 	dir = vector2d(-200, 0);
 	rotated = vector2d_rotate(dir, fov * GF2D_PI / 180);
-	initialAngle = vector2d_angle(dir);
-	endAngle = vector2d_angle(rotated);
-	slog("end - initial: %f", endAngle - initialAngle);
-	slog("%f", fov);
 	vector2d_add(end, self->position, dir);
 	hit = raycast_through_all_entities(self->position, end, layer);
 	if (!hit) return;
 	vector2d_sub(hitdiff, hit->hitpoint, self->position);
 	gf2d_draw_line(self->position, hit->hitpoint, vector4d(255, 0, 0, 255));
-	initialAngle = vector2d_angle(dir);
+	initialAngle = vector2d_angle(dir); initialHitpoint = hit->hitpoint;
+	gf2d_draw_circle(initialHitpoint, 20, vector4d(0, 25, 25, 180));
 	pqlist_insert(pts, hit, vector2d_angle(hitdiff));
-	rotated = vector2d_rotate(dir, fov);
 	vector2d_add(end, self->position, rotated);
 	hit = raycast_through_all_entities(self->position, end, layer);
 	if (!hit) return;
 	vector2d_sub(hitdiff, hit->hitpoint, self->position);
 	gf2d_draw_line(self->position, hit->hitpoint, vector4d(255, 0, 0, 255));
-	endAngle = vector2d_angle(rotated);
+	endAngle = vector2d_angle(rotated); endHitpoint = hit->hitpoint;
+	gf2d_draw_circle(endHitpoint, 20, vector4d(0, 255, 25, 180));
 	pqlist_insert(pts, hit, vector2d_angle(hitdiff));
 	for (i = 0; i < entity_manager.max_entities; i++)
 	{
@@ -99,7 +96,7 @@ void draw_line_of_sight(Entity *self, int layer, double fov)
 		{
 			vector2d_sub(dir, entity_manager.ent_list[i].coll->corners[j], self->position);
 			end = entity_manager.ent_list[i].coll->corners[j];
-			if ((vector2d_angle(dir) < initialAngle)||(vector2d_angle(dir) > endAngle)) continue;
+			if ((vector2d_angle(dir) <= initialAngle)||(vector2d_angle(dir) >= endAngle)) continue;
 			vector2d_set_magnitude(&dir, 200);
 			vector2d_add(end, dir, self->position);
 			hit = raycast_through_all_entities(self->position, end, layer);
@@ -131,13 +128,13 @@ void draw_line_of_sight(Entity *self, int layer, double fov)
 		}
 	}
 	numPoints = pqlist_get_size(pts);
-	x = (double *)malloc(sizeof(Sint16)*(numPoints));
+	x = (Sint16 *)malloc(sizeof(Sint16)*(numPoints));
 	if (!x)
 	{
 		pqlist_free(pts, raycasthit_free);
 		return;
 	}
-	y = (double *)malloc(sizeof(Sint16)*(numPoints));
+	y = (Sint16 *)malloc(sizeof(Sint16)*(numPoints));
 	if (!y)
 	{
 		pqlist_free(pts, raycasthit_free);
@@ -148,14 +145,11 @@ void draw_line_of_sight(Entity *self, int layer, double fov)
 	i = 0;
 	for (hit = pqlist_delete_max(pts); hit != NULL; hit = pqlist_delete_max(pts))
 	{
-		if ((i == 0) && (hit->other == NULL))
-			j = 1;
-		else
-			j = 0;
 		x[i] = (Sint16)hit->hitpoint.x;
 		y[i] = (Sint16)hit->hitpoint.y;
 		if (i > 0)
 		{
+			vector2d_sub(dir, hit->hitpoint, self->position);
 			if (hit->other == NULL)
 			{
 				vector2d_sub(dir, vector2d(x[i - 1], y[i - 1]), self->position);
@@ -174,7 +168,9 @@ void draw_line_of_sight(Entity *self, int layer, double fov)
 			}
 			else
 			{
-				filledTrigonRGBA(
+				// idk how this bug starts, but this stops it
+				if (!(((double)x[i - 1] == initialHitpoint.x) && ((double)y[i - 1] == initialHitpoint.y)))
+					filledTrigonRGBA(
 					gf2d_graphics_get_renderer(),
 					x[i - 1], y[i - 1],
 					x[i], y[i],
