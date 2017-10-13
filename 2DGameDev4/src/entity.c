@@ -53,6 +53,48 @@ void entitiy_update_all_colliders()
 	}
 }
 
+int FindLineCircleIntersections(
+	float cx, float cy, float radius,
+	Vector2D point1, Vector2D point2,
+	Vector2D *intersection1, Vector2D *intersection2)
+{
+	float dx, dy, A, B, C, det, t;
+
+	dx = point2.x - point1.x;
+	dy = point2.y - point1.y;
+
+	A = dx * dx + dy * dy;
+	B = 2 * (dx * (point1.x - cx) + dy * (point1.y - cy));
+	C = (point1.x - cx) * (point1.x - cx) +
+		(point1.y - cy) * (point1.y - cy) -
+		radius * radius;
+
+	det = B * B - 4 * A * C;
+	if ((A <= 0.0000001) || (det < 0))
+	{
+		// No real solutions.
+		slog("no solution");
+		return 0;
+	}
+	else if (det == 0)
+	{
+		// One solution.
+		t = -B / (2 * A);
+		*intersection1 = vector2d(point1.x - t * dx, point1.y + t * dy);
+		return 1;
+	}
+	else
+	{
+		// Two solutions.
+		t = (float)((-B +  sqrt(det)) / (2 * A));
+		*intersection1 = vector2d (point1.x + t * dx, point1.y + t * dy);
+		t = (float)((-B - sqrt(det)) / (2 * A));
+		*intersection2 = vector2d(point1.x - t * dx, point1.y + t * dy);
+		return 2;
+	}
+}
+
+// FIXME this function is bloated. break it up into smaller helper functions
 void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward)
 {
 	int i, j, numPoints;
@@ -67,6 +109,11 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward)
 	Vector2D initialHitpoint, endHitpoint;
 	RaycastHit *hit = NULL;
 	PriorityQueueList *pts;
+	bool lastOther = false;
+	Vector2D lastDirection = vector2d(0, 0);
+	Vector2D circleToLine;
+	Vector2D intersection1, intersection2;
+	double k1, k2, k3;
 	if (!self) return;
 	pts = pqlist_new();
 	if (!pts) return;
@@ -81,11 +128,6 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward)
 		endAngle = endAngle + 360;
 	if (endAngle - initialAngle < 0)
 	{
-		/*
-		tmpAngle = initialAngle;
-		initialAngle = endAngle;
-		endAngle = tmpAngle;
-		*/
 		endAngle = endAngle + 360;
 	}
 	vector2d_add(end, self->position, dir);
@@ -190,8 +232,55 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward)
 		y[i] = (Sint16)hit->hitpoint.y;
 		if ((i > 0))
 		{
-			vector2d_sub(dir, hit->hitpoint, self->position);
-			if (hit->other == NULL)
+			//vector2d_sub(dir, hit->hitpoint, self->position);
+			if ((hit->other == NULL) && (lastOther))
+			{
+				vector2d_sub(end, vector2d(x[i], y[i]), self->position);
+				vector2d_set_magnitude(&lastDirection, vector2d_magnitude(end) * 2);
+				vector2d_add(lastDirection, vector2d(x[i-1],y[i-1]), lastDirection);
+				// handle the case where we have to curve into a wall
+				FindLineCircleIntersections(self->position.x, self->position.y,
+					vector2d_magnitude(end),
+					vector2d(x[i - 1], y[i - 1]),
+					lastDirection,
+					&intersection1,
+					&intersection2
+					);
+				vector2d_sub(dir, intersection1, self->position);
+				vector2d_sub(end, vector2d(x[i], y[i]), self->position);
+				tmpAngle = vector2d_angle(dir);
+				if (tmpAngle < 0)
+					tmpAngle += 360;
+				tmpAngleEnd = vector2d_angle(end);
+				if (tmpAngleEnd < 0)
+					tmpAngleEnd += 360;
+				if (((tmpAngle - tmpAngleEnd < 180) && (tmpAngleEnd<tmpAngle)))
+					filledPieRGBA(
+						gf2d_graphics_get_renderer(),
+						self->position.x, self->position.y,
+						vector2d_magnitude(end),
+						tmpAngleEnd,
+						tmpAngle,
+						150, 255, 10 + i * 5, 70
+						);
+				if ((tmpAngle - tmpAngleEnd < -180))
+					filledPieRGBA(
+						gf2d_graphics_get_renderer(),
+						self->position.x, self->position.y,
+						vector2d_magnitude(end),
+						tmpAngleEnd,
+						tmpAngle,
+						150, 255, 10 + i * 5, 70
+						);
+				filledTrigonRGBA(
+					gf2d_graphics_get_renderer(),
+					intersection1.x, intersection1.y,
+					x[i - 1], y[i - 1],
+					self->position.x, self->position.y,
+					150, 255, 10 + i * 5, 70
+					);
+			}
+			else if (hit->other == NULL)
 			{
 				vector2d_sub(dir, vector2d(x[i - 1], y[i - 1]), self->position);
 				vector2d_sub(end, vector2d(x[i], y[i]), self->position);
@@ -201,8 +290,6 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward)
 				tmpAngleEnd = vector2d_angle(end);
 				if (tmpAngleEnd < 0)
 					tmpAngleEnd += 360;
-				//if ((tmpAngleEnd - tmpAngle > initialAngle - endAngle) && ((tmpAngleEnd - tmpAngle < endAngle - initialAngle)))
-				//if (tmpAngle - tmpAngleEnd < endAngle - initialAngle)
 				if (((tmpAngle - tmpAngleEnd < 180)&&(tmpAngleEnd<tmpAngle)))
 					filledPieRGBA(
 						gf2d_graphics_get_renderer(),
@@ -224,16 +311,57 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward)
 			}
 			else
 			{
-				// idk how this bug starts, but this stops it
 				filledTrigonRGBA(
-						gf2d_graphics_get_renderer(),
-						x[i - 1], y[i - 1],
-						x[i], y[i],
-						self->position.x, self->position.y,
-						150, 255, 10 + i * 5, 70
-						);
+					gf2d_graphics_get_renderer(),
+					x[i - 1], y[i - 1],
+					x[i], y[i],
+					self->position.x, self->position.y,
+					150, 255, 10 + i * 5, 70
+					);
 			}
+		}
+		if ((hit->other == NULL)||(hit->hitpoint.x == hit->other->corners[3].x)|| (hit->hitpoint.x == hit->other->corners[0].x))
+			lastOther = false;
+		else
+		{
 
+			// calculate the last direction
+			if ((hit->hitpoint.x >= hit->other->corners[3].x)&&(hit->hitpoint.x <= hit->other->corners[0].x))
+			{
+				// we're either on the top or bottom side, point in the x direction
+				if (self->position.x > hit->hitpoint.x)
+				{
+					if (self->position.y > hit->hitpoint.y)
+						lastDirection = vector2d(-1,0);
+					else
+						lastDirection = vector2d(1,0);
+				}
+				else
+				{
+					if (self->position.y > hit->hitpoint.y)
+						lastDirection = vector2d(-1,0);
+					else
+						lastDirection = vector2d(1,0);
+				}
+			}
+			else
+			{
+				if (self->position.y > hit->hitpoint.y)
+				{
+					if (self->position.x > hit->hitpoint.x)
+						lastDirection = vector2d(0, 1);
+					else
+						lastDirection = vector2d(0, -1);
+				}
+				else
+				{
+					if (self->position.x > hit->hitpoint.x)
+						lastDirection = vector2d(0, 1);
+					else
+						lastDirection = vector2d(0, -1);
+				}
+			}
+			lastOther = true;
 		}
 		raycasthit_free(hit);
 		i++;
