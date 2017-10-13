@@ -73,6 +73,7 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward)
 	// add the start and end of the fov
 	dir = forward;
 	rotated = vector2d_rotate(dir, fov * GF2D_PI / 180);
+	slog("fov: %f", acos(vector2d_dot_product(dir, rotated) / (vector2d_magnitude(dir)*vector2d_magnitude(rotated))) * 180 / GF2D_PI);
 	initialAngle = vector2d_angle(dir); endAngle = vector2d_angle(rotated);
 	if (initialAngle < 0)
 		initialAngle = initialAngle + 360;
@@ -97,7 +98,7 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward)
 	tmpAngle = vector2d_angle(hitdiff);
 	if (tmpAngle < 0)
 		tmpAngle += 360;
-	pqlist_insert(pts, hit, tmpAngle - endAngle);
+	pqlist_insert(pts, hit, acos(vector2d_dot_product(hitdiff, forward) / (vector2d_magnitude(hitdiff)*vector2d_magnitude(forward))));
 	vector2d_add(end, self->position, rotated);
 	hit = raycast_through_all_entities(self->position, end, layer);
 	if (!hit) return;
@@ -108,7 +109,7 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward)
 	tmpAngle = vector2d_angle(hitdiff);
 	if (tmpAngle < 0)
 		tmpAngle += 360;
-	pqlist_insert(pts, hit, 0);
+	pqlist_insert(pts, hit, acos(vector2d_dot_product(hitdiff, forward) / (vector2d_magnitude(hitdiff)*vector2d_magnitude(forward))));
 	for (i = 0; i < entity_manager.max_entities; i++)
 	{
 		if (!entity_manager.ent_list[i].inUse) continue;
@@ -136,7 +137,7 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward)
 			tmpAngle = vector2d_angle(hitdiff);
 			if (tmpAngle - endAngle < 0)
 				tmpAngle += 360;
-			pqlist_insert(pts, hit, tmpAngle - endAngle);
+			pqlist_insert(pts, hit, acos(vector2d_dot_product(hitdiff, forward) / (vector2d_magnitude(hitdiff)*vector2d_magnitude(forward))));
 			if ((hit->hitpoint.x == entity_manager.ent_list[i].coll->corners[j].x)
 				&& (hit->hitpoint.y == entity_manager.ent_list[i].coll->corners[j].y))
 			{
@@ -150,7 +151,8 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward)
 				tmpAngle = vector2d_angle(hitdiff);
 				if (tmpAngle - endAngle < 0)
 					tmpAngle += 360;
-				pqlist_insert(pts, hit, tmpAngle - endAngle);
+				//pqlist_insert(pts, hit, tmpAngle - endAngle);
+				pqlist_insert(pts, hit, acos(vector2d_dot_product(hitdiff, forward) / (vector2d_magnitude(hitdiff)*vector2d_magnitude(forward))));
 				end = entity_manager.ent_list[i].coll->corners[j];
 				vector2d_set_magnitude(&dir, fwdMag);
 				dir = vector2d_rotate(dir, -0.02);
@@ -161,7 +163,7 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward)
 				tmpAngle = vector2d_angle(hitdiff);
 				if (tmpAngle - endAngle < 0)
 					tmpAngle += 360;
-				pqlist_insert(pts, hit, tmpAngle - endAngle);
+				pqlist_insert(pts, hit, acos(vector2d_dot_product(hitdiff, forward) / (vector2d_magnitude(hitdiff)*vector2d_magnitude(forward))));
 			}
 		}
 	}
@@ -222,7 +224,7 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward)
 			else
 			{
 				// idk how this bug starts, but this stops it
-					filledTrigonRGBA(
+				filledTrigonRGBA(
 						gf2d_graphics_get_renderer(),
 						x[i - 1], y[i - 1],
 						x[i], y[i],
