@@ -53,15 +53,17 @@ void entitiy_update_all_colliders()
 	}
 }
 
-void draw_line_of_sight(Entity *self, int layer, double fov)
+void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward)
 {
 	int i, j, numPoints;
 	Sint16 *x, *y;
 	Vector2D dir;
+	float fwdMag = vector2d_magnitude(forward);
 	Vector2D rotated;
 	Vector2D end;
 	Vector2D hitdiff;
-	float initialAngle, endAngle;
+	float initialAngle, endAngle, tmpAngle, tmpAngleEnd;
+	float fovcompare;
 	Vector2D initialHitpoint, endHitpoint;
 	RaycastHit *hit = NULL;
 	PriorityQueueList *pts;
@@ -69,24 +71,44 @@ void draw_line_of_sight(Entity *self, int layer, double fov)
 	pts = pqlist_new();
 	if (!pts) return;
 	// add the start and end of the fov
-	dir = vector2d(-200, 0);
+	dir = forward;
 	rotated = vector2d_rotate(dir, fov * GF2D_PI / 180);
+	initialAngle = vector2d_angle(dir); endAngle = vector2d_angle(rotated);
+	if (initialAngle < 0)
+		initialAngle = initialAngle + 360;
+	if (endAngle < 0)
+		endAngle = endAngle + 360;
+	if (endAngle - initialAngle < 0)
+	{
+		/*
+		tmpAngle = initialAngle;
+		initialAngle = endAngle;
+		endAngle = tmpAngle;
+		*/
+		endAngle = endAngle + 360;
+	}
 	vector2d_add(end, self->position, dir);
 	hit = raycast_through_all_entities(self->position, end, layer);
 	if (!hit) return;
 	vector2d_sub(hitdiff, hit->hitpoint, self->position);
-	gf2d_draw_line(self->position, hit->hitpoint, vector4d(255, 0, 0, 255));
-	initialAngle = vector2d_angle(dir); initialHitpoint = hit->hitpoint;
+	gf2d_draw_line(self->position, hit->hitpoint, vector4d(255, 0, 0, 255)); 
+	initialHitpoint = hit->hitpoint;
 	gf2d_draw_circle(initialHitpoint, 20, vector4d(0, 25, 25, 180));
-	pqlist_insert(pts, hit, vector2d_angle(hitdiff));
+	tmpAngle = vector2d_angle(hitdiff);
+	if (tmpAngle < 0)
+		tmpAngle += 360;
+	pqlist_insert(pts, hit, tmpAngle - endAngle);
 	vector2d_add(end, self->position, rotated);
 	hit = raycast_through_all_entities(self->position, end, layer);
 	if (!hit) return;
 	vector2d_sub(hitdiff, hit->hitpoint, self->position);
 	gf2d_draw_line(self->position, hit->hitpoint, vector4d(255, 0, 0, 255));
-	endAngle = vector2d_angle(rotated); endHitpoint = hit->hitpoint;
+	endHitpoint = hit->hitpoint;
 	gf2d_draw_circle(endHitpoint, 20, vector4d(0, 255, 25, 180));
-	pqlist_insert(pts, hit, vector2d_angle(hitdiff));
+	tmpAngle = vector2d_angle(hitdiff);
+	if (tmpAngle < 0)
+		tmpAngle += 360;
+	pqlist_insert(pts, hit, 0);
 	for (i = 0; i < entity_manager.max_entities; i++)
 	{
 		if (!entity_manager.ent_list[i].inUse) continue;
@@ -96,34 +118,50 @@ void draw_line_of_sight(Entity *self, int layer, double fov)
 		{
 			vector2d_sub(dir, entity_manager.ent_list[i].coll->corners[j], self->position);
 			end = entity_manager.ent_list[i].coll->corners[j];
-			if ((vector2d_angle(dir) <= initialAngle)||(vector2d_angle(dir) >= endAngle)) continue;
-			vector2d_set_magnitude(&dir, 200);
+			tmpAngle = vector2d_angle(dir);
+			if (tmpAngle < 0)
+				tmpAngle += 360; 
+			if (!((!((tmpAngle <= initialAngle) || (tmpAngle >= endAngle)))
+					|| ((360 < endAngle) && (tmpAngle < endAngle - 360))))
+			{
+				continue;
+			}
+			vector2d_set_magnitude(&dir, fwdMag);
 			vector2d_add(end, dir, self->position);
 			hit = raycast_through_all_entities(self->position, end, layer);
 			if (!hit)
 				continue;
 			vector2d_sub(hitdiff, hit->hitpoint, self->position);
-			gf2d_draw_line(self->position, hit->hitpoint, vector4d(0, 255, 255, 255));
-			pqlist_insert(pts, hit, vector2d_angle(hitdiff));
+			//gf2d_draw_line(self->position, hit->hitpoint, vector4d(255, 0, 255, 255));
+			tmpAngle = vector2d_angle(hitdiff);
+			if (tmpAngle - endAngle < 0)
+				tmpAngle += 360;
+			pqlist_insert(pts, hit, tmpAngle - endAngle);
 			if ((hit->hitpoint.x == entity_manager.ent_list[i].coll->corners[j].x)
 				&& (hit->hitpoint.y == entity_manager.ent_list[i].coll->corners[j].y))
 			{
 				end = entity_manager.ent_list[i].coll->corners[j];
-				vector2d_set_magnitude(&dir, 200);
+				vector2d_set_magnitude(&dir, fwdMag);
 				dir = vector2d_rotate(dir, 0.01);
 				vector2d_add(end, dir, self->position);
 				hit = raycast_through_all_entities(self->position, end, layer);
 				if (!hit) continue;
 				vector2d_sub(hitdiff, hit->hitpoint, self->position);
-				pqlist_insert(pts, hit, vector2d_angle(hitdiff)); 
+				tmpAngle = vector2d_angle(hitdiff);
+				if (tmpAngle - endAngle < 0)
+					tmpAngle += 360;
+				pqlist_insert(pts, hit, tmpAngle - endAngle);
 				end = entity_manager.ent_list[i].coll->corners[j];
-				vector2d_set_magnitude(&dir, 200);
+				vector2d_set_magnitude(&dir, fwdMag);
 				dir = vector2d_rotate(dir, -0.02);
 				vector2d_add(end, dir, self->position);
 				hit = raycast_through_all_entities(self->position, end, layer);
 				if (!hit) continue;
 				vector2d_sub(hitdiff, hit->hitpoint, self->position);
-				pqlist_insert(pts, hit, vector2d_angle(hitdiff));
+				tmpAngle = vector2d_angle(hitdiff);
+				if (tmpAngle - endAngle < 0)
+					tmpAngle += 360;
+				pqlist_insert(pts, hit, tmpAngle - endAngle);
 			}
 		}
 	}
@@ -147,36 +185,50 @@ void draw_line_of_sight(Entity *self, int layer, double fov)
 	{
 		x[i] = (Sint16)hit->hitpoint.x;
 		y[i] = (Sint16)hit->hitpoint.y;
-		if (i > 0)
+		if ((i > 0))
 		{
 			vector2d_sub(dir, hit->hitpoint, self->position);
 			if (hit->other == NULL)
 			{
 				vector2d_sub(dir, vector2d(x[i - 1], y[i - 1]), self->position);
 				vector2d_sub(end, vector2d(x[i], y[i]), self->position);
-				if ((vector2d_angle(end) - vector2d_angle(dir) < fov) && ((vector2d_angle(end) - vector2d_angle(dir) > -fov)))
-				{
+				tmpAngle = vector2d_angle(dir);
+				if (tmpAngle < 0)
+					tmpAngle += 360;
+				tmpAngleEnd = vector2d_angle(end);
+				if (tmpAngleEnd < 0)
+					tmpAngleEnd += 360;
+				//if ((tmpAngleEnd - tmpAngle > initialAngle - endAngle) && ((tmpAngleEnd - tmpAngle < endAngle - initialAngle)))
+				//if (tmpAngle - tmpAngleEnd < endAngle - initialAngle)
+				if (((tmpAngle - tmpAngleEnd < 180)&&(tmpAngleEnd<tmpAngle)))
 					filledPieRGBA(
 						gf2d_graphics_get_renderer(),
 						self->position.x, self->position.y,
 						vector2d_magnitude(end),
-						vector2d_angle(end),
-						vector2d_angle(dir),
-						10, 255, 10, 100
+						tmpAngleEnd,
+						tmpAngle,
+						150, 255, 10 + i * 5, 70
 						);
-				}
+				if ((tmpAngle - tmpAngleEnd < -180))
+					filledPieRGBA(
+					gf2d_graphics_get_renderer(),
+					self->position.x, self->position.y,
+					vector2d_magnitude(end),
+					tmpAngleEnd,
+					tmpAngle,
+					150, 255, 10 + i * 5, 70
+					);
 			}
 			else
 			{
 				// idk how this bug starts, but this stops it
-				if (!(((double)x[i - 1] == initialHitpoint.x) && ((double)y[i - 1] == initialHitpoint.y)))
 					filledTrigonRGBA(
-					gf2d_graphics_get_renderer(),
-					x[i - 1], y[i - 1],
-					x[i], y[i],
-					self->position.x, self->position.y,
-					10, 255, 10, 100
-					);
+						gf2d_graphics_get_renderer(),
+						x[i - 1], y[i - 1],
+						x[i], y[i],
+						self->position.x, self->position.y,
+						10, 255, 10+i * 5, 100
+						);
 			}
 
 		}

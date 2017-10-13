@@ -6,6 +6,9 @@
 SDL_GameController *controller;
 SDL_Joystick *joystick;
 
+int i = 0;
+Vector2D direction = { 200,0 };
+
 void player_init(Entity *self)
 {
 	int i;
@@ -53,5 +56,7 @@ void player_update(Entity *self)
 			}
 		}
 	}
-	draw_line_of_sight(self, 1, 45.0);
+	draw_line_of_sight(self, 1, 60, direction);
+	direction = vector2d_rotate(direction, 0.005);
+	//i++;
 }
