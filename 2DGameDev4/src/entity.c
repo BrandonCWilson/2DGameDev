@@ -98,7 +98,7 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward)
 	tmpAngle = vector2d_angle(hitdiff);
 	if (tmpAngle < 0)
 		tmpAngle += 360;
-	pqlist_insert(pts, hit, acos(vector2d_dot_product(hitdiff, forward) / (vector2d_magnitude(hitdiff)*vector2d_magnitude(forward))));
+	pqlist_insert(pts, hit, acos(vector2d_dot_product(hitdiff, forward) / (vector2d_magnitude(hitdiff)*fwdMag)));
 	vector2d_add(end, self->position, rotated);
 	hit = raycast_through_all_entities(self->position, end, layer);
 	if (!hit) return;
@@ -109,7 +109,7 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward)
 	tmpAngle = vector2d_angle(hitdiff);
 	if (tmpAngle < 0)
 		tmpAngle += 360;
-	pqlist_insert(pts, hit, acos(vector2d_dot_product(hitdiff, forward) / (vector2d_magnitude(hitdiff)*vector2d_magnitude(forward))));
+	pqlist_insert(pts, hit, acos(vector2d_dot_product(hitdiff, forward) / (vector2d_magnitude(hitdiff)*fwdMag)));
 	for (i = 0; i < entity_manager.max_entities; i++)
 	{
 		if (!entity_manager.ent_list[i].inUse) continue;
@@ -127,7 +127,8 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward)
 			{
 				continue;
 			}
-			vector2d_set_magnitude(&dir, fwdMag);
+			if (fwdMag<vector2d_magnitude(dir)) 
+				vector2d_set_magnitude(&dir, fwdMag);
 			vector2d_add(end, dir, self->position);
 			hit = raycast_through_all_entities(self->position, end, layer);
 			if (!hit)
@@ -137,7 +138,7 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward)
 			tmpAngle = vector2d_angle(hitdiff);
 			if (tmpAngle - endAngle < 0)
 				tmpAngle += 360;
-			pqlist_insert(pts, hit, acos(vector2d_dot_product(hitdiff, forward) / (vector2d_magnitude(hitdiff)*vector2d_magnitude(forward))));
+			pqlist_insert(pts, hit, acos(vector2d_dot_product(hitdiff, forward) / (vector2d_magnitude(hitdiff)*fwdMag)));
 			if ((hit->hitpoint.x == entity_manager.ent_list[i].coll->corners[j].x)
 				&& (hit->hitpoint.y == entity_manager.ent_list[i].coll->corners[j].y))
 			{
@@ -152,7 +153,7 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward)
 				if (tmpAngle - endAngle < 0)
 					tmpAngle += 360;
 				//pqlist_insert(pts, hit, tmpAngle - endAngle);
-				pqlist_insert(pts, hit, acos(vector2d_dot_product(hitdiff, forward) / (vector2d_magnitude(hitdiff)*vector2d_magnitude(forward))));
+				pqlist_insert(pts, hit, acos(vector2d_dot_product(hitdiff, forward) / (vector2d_magnitude(hitdiff)*fwdMag)));
 				end = entity_manager.ent_list[i].coll->corners[j];
 				vector2d_set_magnitude(&dir, fwdMag);
 				dir = vector2d_rotate(dir, -0.02);
@@ -163,7 +164,7 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward)
 				tmpAngle = vector2d_angle(hitdiff);
 				if (tmpAngle - endAngle < 0)
 					tmpAngle += 360;
-				pqlist_insert(pts, hit, acos(vector2d_dot_product(hitdiff, forward) / (vector2d_magnitude(hitdiff)*vector2d_magnitude(forward))));
+				pqlist_insert(pts, hit, acos(vector2d_dot_product(hitdiff, forward) / (vector2d_magnitude(hitdiff)*fwdMag)));
 			}
 		}
 	}
@@ -229,7 +230,7 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward)
 						x[i - 1], y[i - 1],
 						x[i], y[i],
 						self->position.x, self->position.y,
-						10, 255, 10+i * 5, 100
+						150, 255, 10 + i * 5, 70
 						);
 			}
 
