@@ -166,11 +166,10 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward)
 				tmpAngle += 360; 
 			if (!((!((tmpAngle <= initialAngle) || (tmpAngle >= endAngle)))
 					|| ((360 < endAngle) && (tmpAngle < endAngle - 360))))
-			{
 				continue;
-			}
-			if (fwdMag<vector2d_magnitude(dir)) 
-				vector2d_set_magnitude(&dir, fwdMag);
+			if (fwdMag < vector2d_magnitude(dir))
+				continue;
+			vector2d_set_magnitude(&dir, fwdMag);
 			vector2d_add(end, dir, self->position);
 			hit = raycast_through_all_entities(self->position, end, layer);
 			if (!hit)
