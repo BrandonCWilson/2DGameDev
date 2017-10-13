@@ -254,31 +254,25 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward)
 				tmpAngleEnd = vector2d_angle(end);
 				if (tmpAngleEnd < 0)
 					tmpAngleEnd += 360;
-				if (((tmpAngle - tmpAngleEnd < 180) && (tmpAngleEnd<tmpAngle)))
+				if ((((tmpAngle - tmpAngleEnd < 180) && (tmpAngleEnd < tmpAngle))) || ((tmpAngle - tmpAngleEnd < -180)))
+				{
 					filledPieRGBA(
 						gf2d_graphics_get_renderer(),
 						self->position.x, self->position.y,
 						vector2d_magnitude(end),
 						tmpAngleEnd,
 						tmpAngle,
-						150, 255, 10 + i * 5, 70
+						0, 255, 10 + i * 5, 70
 						);
-				if ((tmpAngle - tmpAngleEnd < -180))
-					filledPieRGBA(
+
+					filledTrigonRGBA(
 						gf2d_graphics_get_renderer(),
+						intersection1.x, intersection1.y,
+						x[i - 1], y[i - 1],
 						self->position.x, self->position.y,
-						vector2d_magnitude(end),
-						tmpAngleEnd,
-						tmpAngle,
-						150, 255, 10 + i * 5, 70
+						0, 255, 10 + i * 5, 70
 						);
-				filledTrigonRGBA(
-					gf2d_graphics_get_renderer(),
-					intersection1.x, intersection1.y,
-					x[i - 1], y[i - 1],
-					self->position.x, self->position.y,
-					150, 255, 10 + i * 5, 70
-					);
+				}
 			}
 			else if (hit->other == NULL)
 			{
