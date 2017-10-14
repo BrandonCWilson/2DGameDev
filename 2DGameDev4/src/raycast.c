@@ -12,16 +12,16 @@ int get_line_intersection(Vector2D Apos, Vector2D Adir, Vector2D Bpos, Vector2D 
 	tDenom = (-s2_x * s1_y + s1_x * s2_y);
 	if ((!sDenom) || (!tDenom))
 		return 0;
-	s = (-s1_y * (Apos.x - Bpos.x) + s1_x * (Apos.y - Bpos.y));
-	t = (s2_x * (Apos.y - Bpos.y) - s2_y * (Apos.x - Bpos.x));
-	if ((s*sDenom >= 0) && ((s >= 0 && s <= sDenom)||(s < 0 && s >= sDenom)) && 
-		((t*tDenom >= 0) && ((t >= 0 && t <= tDenom)||(t < 0 && t >= tDenom))))
+	s = (-s1_y * (Apos.x - Bpos.x) + s1_x * (Apos.y - Bpos.y)) / sDenom;
+	t = (s2_x * (Apos.y - Bpos.y) - s2_y * (Apos.x - Bpos.x)) / tDenom;
+
+	if (s >= 0 && s <= 1 && t >= 0 && t <= 1)
 	{
 		// Collision detected
 		if (out != NULL)
 		{
-			out->x = Apos.x + ((t / tDenom) * s1_x);
-			out->y = Apos.y + ((t / tDenom) * s1_y);
+			out->x = Apos.x + (t * s1_x);
+			out->y = Apos.y + (t * s1_y);
 		}
 		return 1;
 	}
