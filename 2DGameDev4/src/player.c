@@ -56,7 +56,7 @@ void player_update(Entity *self)
 			}
 		}
 	}
-	draw_line_of_sight(self, 1, 170, direction);
+	draw_line_of_sight(self, 1, 90, direction, vector4d(255,255,100,255), 20);
 	direction = vector2d_rotate(direction, 0.01);
 	i++;
 }

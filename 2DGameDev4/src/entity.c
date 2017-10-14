@@ -95,7 +95,7 @@ int FindLineCircleIntersections(
 }
 
 // FIXME this function is bloated. break it up into smaller helper functions
-void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward)
+void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward, Vector4D color, double precision)
 {
 	int i, j, numPoints;
 	Sint16 *x, *y;
@@ -120,7 +120,6 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward)
 	// add the start and end of the fov
 	dir = forward;
 	rotated = vector2d_rotate(dir, fov * GF2D_PI / 180);
-	slog("fov: %f", acos(vector2d_dot_product(dir, rotated) / (vector2d_magnitude(dir)*vector2d_magnitude(rotated))) * 180 / GF2D_PI);
 	initialAngle = vector2d_angle(dir); endAngle = vector2d_angle(rotated);
 	if (initialAngle < 0)
 		initialAngle = initialAngle + 360;
@@ -134,9 +133,7 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward)
 	hit = raycast_through_all_entities(self->position, end, layer);
 	if (!hit) return;
 	vector2d_sub(hitdiff, hit->hitpoint, self->position);
-	gf2d_draw_line(self->position, hit->hitpoint, vector4d(255, 0, 0, 255)); 
 	initialHitpoint = hit->hitpoint;
-	gf2d_draw_circle(initialHitpoint, 20, vector4d(0, 25, 25, 180));
 	tmpAngle = vector2d_angle(hitdiff);
 	if (tmpAngle < 0)
 		tmpAngle += 360;
@@ -145,13 +142,27 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward)
 	hit = raycast_through_all_entities(self->position, end, layer);
 	if (!hit) return;
 	vector2d_sub(hitdiff, hit->hitpoint, self->position);
-	gf2d_draw_line(self->position, hit->hitpoint, vector4d(255, 0, 0, 255));
 	endHitpoint = hit->hitpoint;
-	gf2d_draw_circle(endHitpoint, 20, vector4d(0, 255, 25, 180));
 	tmpAngle = vector2d_angle(hitdiff);
 	if (tmpAngle < 0)
 		tmpAngle += 360;
 	pqlist_insert(pts, hit, acos(vector2d_dot_product(hitdiff, forward) / (vector2d_magnitude(hitdiff)*fwdMag)));
+	for (k1 = 0; k1 < fov * (GF2D_PI/180); k1 += (precision * GF2D_PI / 180))
+	{
+		dir = vector2d_rotate(forward, k1);
+		vector2d_add(end, dir, self->position);
+		hit = raycast_through_all_entities(self->position, end, layer);
+		if (!hit)
+			continue;
+		vector2d_sub(hitdiff, hit->hitpoint, self->position);
+		//gf2d_draw_line(self->position, hit->hitpoint, vector4d(255, 0, 255, 255));
+		tmpAngle = vector2d_angle(hitdiff);
+		if (tmpAngle - endAngle < 0)
+			tmpAngle += 360;
+		pqlist_insert(pts, hit, k1);
+		slog("ANGLE: %f", k1);
+	}
+	// do a few arbitrary casts to smooth it out
 	for (i = 0; i < entity_manager.max_entities; i++)
 	{
 		if (!entity_manager.ent_list[i].inUse) continue;
@@ -261,7 +272,7 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward)
 						vector2d_magnitude(end),
 						tmpAngleEnd,
 						tmpAngle,
-						0, 255, 10 + i * 5, 70
+						color.w, color.x, color.y, color.z
 						);
 
 					filledTrigonRGBA(
@@ -269,7 +280,7 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward)
 						intersection1.x, intersection1.y,
 						x[i - 1], y[i - 1],
 						self->position.x, self->position.y,
-						0, 255, 10 + i * 5, 70
+						color.w, color.x, color.y, color.z
 						);
 				}
 			}
@@ -290,7 +301,7 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward)
 						vector2d_magnitude(end),
 						tmpAngleEnd,
 						tmpAngle,
-						150, 255, 10 + i * 5, 70
+						color.w, color.x, color.y, color.z
 						);
 				if ((tmpAngle - tmpAngleEnd < -180))
 					filledPieRGBA(
@@ -299,7 +310,7 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward)
 					vector2d_magnitude(end),
 					tmpAngleEnd,
 					tmpAngle,
-					150, 255, 10 + i * 5, 70
+					color.w, color.x, color.y, color.z
 					);
 			}
 			else
@@ -309,7 +320,7 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward)
 					x[i - 1], y[i - 1],
 					x[i], y[i],
 					self->position.x, self->position.y,
-					150, 255, 10 + i * 5, 70
+					color.w, color.x, color.y, color.z
 					);
 			}
 		}
