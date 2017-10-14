@@ -94,26 +94,22 @@ int FindLineCircleIntersections(
 	}
 }
 
-// FIXME this function is bloated. break it up into smaller helper functions
-void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward, Vector4D color, double precision)
+void draw_line_of_sight_2(Entity *self, int layer, double fov, Vector2D forward, Vector4D color, double precision)
 {
 	int i, j, numPoints;
 	Sint16 *x, *y;
 	Vector2D dir;
+	float fwdMagSquared = vector2d_magnitude_squared(forward);
 	float fwdMag = vector2d_magnitude(forward);
 	Vector2D rotated;
 	Vector2D end;
 	Vector2D hitdiff;
-	float initialAngle, endAngle, tmpAngle, tmpAngleEnd;
+	float initialAngle, endAngle, tmpAngle;
 	float fovcompare;
 	Vector2D initialHitpoint, endHitpoint;
+	Vector2D tangent;
 	RaycastHit *hit = NULL;
 	PriorityQueueList *pts;
-	bool lastOther = false;
-	Vector2D lastDirection = vector2d(0, 0);
-	Vector2D circleToLine;
-	Vector2D intersection1, intersection2;
-	double k1, k2, k3;
 	if (!self) return;
 	pts = pqlist_new();
 	if (!pts) return;
@@ -134,35 +130,23 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward, V
 	if (!hit) return;
 	vector2d_sub(hitdiff, hit->hitpoint, self->position);
 	initialHitpoint = hit->hitpoint;
-	tmpAngle = vector2d_angle(hitdiff);
-	if (tmpAngle < 0)
-		tmpAngle += 360;
 	pqlist_insert(pts, hit, acos(vector2d_dot_product(hitdiff, forward) / (vector2d_magnitude(hitdiff)*fwdMag)));
 	vector2d_add(end, self->position, rotated);
 	hit = raycast_through_all_entities(self->position, end, layer);
 	if (!hit) return;
 	vector2d_sub(hitdiff, hit->hitpoint, self->position);
 	endHitpoint = hit->hitpoint;
-	tmpAngle = vector2d_angle(hitdiff);
-	if (tmpAngle < 0)
-		tmpAngle += 360;
 	pqlist_insert(pts, hit, acos(vector2d_dot_product(hitdiff, forward) / (vector2d_magnitude(hitdiff)*fwdMag)));
-	for (k1 = 0; k1 < fov * (GF2D_PI/180); k1 += (precision * GF2D_PI / 180))
+	for (tmpAngle = 0; tmpAngle < fov * (GF2D_PI / 180); tmpAngle += (precision * GF2D_PI / 180))
 	{
-		dir = vector2d_rotate(forward, k1);
+		dir = vector2d_rotate(forward, tmpAngle);
 		vector2d_add(end, dir, self->position);
 		hit = raycast_through_all_entities(self->position, end, layer);
 		if (!hit)
 			continue;
 		vector2d_sub(hitdiff, hit->hitpoint, self->position);
-		//gf2d_draw_line(self->position, hit->hitpoint, vector4d(255, 0, 255, 255));
-		tmpAngle = vector2d_angle(hitdiff);
-		if (tmpAngle - endAngle < 0)
-			tmpAngle += 360;
-		pqlist_insert(pts, hit, k1);
-		slog("ANGLE: %f", k1);
+		pqlist_insert(pts, hit, tmpAngle);
 	}
-	// do a few arbitrary casts to smooth it out
 	for (i = 0; i < entity_manager.max_entities; i++)
 	{
 		if (!entity_manager.ent_list[i].inUse) continue;
@@ -172,13 +156,13 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward, V
 		{
 			vector2d_sub(dir, entity_manager.ent_list[i].coll->corners[j], self->position);
 			end = entity_manager.ent_list[i].coll->corners[j];
+			if (fwdMagSquared < vector2d_magnitude_squared(dir))
+				continue; 
 			tmpAngle = vector2d_angle(dir);
 			if (tmpAngle < 0)
-				tmpAngle += 360; 
+				tmpAngle += 360;
 			if (!((!((tmpAngle <= initialAngle) || (tmpAngle >= endAngle)))
-					|| ((360 < endAngle) && (tmpAngle < endAngle - 360))))
-				continue;
-			if (fwdMag < vector2d_magnitude(dir))
+				|| ((360 < endAngle) && (tmpAngle < endAngle - 360))))
 				continue;
 			vector2d_set_magnitude(&dir, fwdMag);
 			vector2d_add(end, dir, self->position);
@@ -186,7 +170,6 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward, V
 			if (!hit)
 				continue;
 			vector2d_sub(hitdiff, hit->hitpoint, self->position);
-			//gf2d_draw_line(self->position, hit->hitpoint, vector4d(255, 0, 255, 255));
 			tmpAngle = vector2d_angle(hitdiff);
 			if (tmpAngle - endAngle < 0)
 				tmpAngle += 360;
@@ -194,33 +177,23 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward, V
 			if ((hit->hitpoint.x == entity_manager.ent_list[i].coll->corners[j].x)
 				&& (hit->hitpoint.y == entity_manager.ent_list[i].coll->corners[j].y))
 			{
-				end = entity_manager.ent_list[i].coll->corners[j];
 				vector2d_set_magnitude(&dir, fwdMag);
 				dir = vector2d_rotate(dir, 0.01);
 				vector2d_add(end, dir, self->position);
 				hit = raycast_through_all_entities(self->position, end, layer);
 				if (!hit) continue;
 				vector2d_sub(hitdiff, hit->hitpoint, self->position);
-				tmpAngle = vector2d_angle(hitdiff);
-				if (tmpAngle - endAngle < 0)
-					tmpAngle += 360;
-				//pqlist_insert(pts, hit, tmpAngle - endAngle);
 				pqlist_insert(pts, hit, acos(vector2d_dot_product(hitdiff, forward) / (vector2d_magnitude(hitdiff)*fwdMag)));
-				end = entity_manager.ent_list[i].coll->corners[j];
-				vector2d_set_magnitude(&dir, fwdMag);
 				dir = vector2d_rotate(dir, -0.02);
 				vector2d_add(end, dir, self->position);
 				hit = raycast_through_all_entities(self->position, end, layer);
 				if (!hit) continue;
 				vector2d_sub(hitdiff, hit->hitpoint, self->position);
-				tmpAngle = vector2d_angle(hitdiff);
-				if (tmpAngle - endAngle < 0)
-					tmpAngle += 360;
 				pqlist_insert(pts, hit, acos(vector2d_dot_product(hitdiff, forward) / (vector2d_magnitude(hitdiff)*fwdMag)));
 			}
 		}
 	}
-	numPoints = pqlist_get_size(pts);
+	numPoints = pqlist_get_size(pts) + 1;
 	x = (Sint16 *)malloc(sizeof(Sint16)*(numPoints));
 	if (!x)
 	{
@@ -235,144 +208,31 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward, V
 		return;
 	}
 	memset(x, 0, sizeof(Sint16)*(numPoints)); memset(y, 0, sizeof(Sint16)*(numPoints));
-	i = 0;
+	x[0] = self->position.x;
+	y[0] = self->position.y;
+	i = 1;
 	for (hit = pqlist_delete_max(pts); hit != NULL; hit = pqlist_delete_max(pts))
 	{
 		x[i] = (Sint16)hit->hitpoint.x;
 		y[i] = (Sint16)hit->hitpoint.y;
-		if ((i > 0))
-		{
-			//vector2d_sub(dir, hit->hitpoint, self->position);
-			if ((hit->other == NULL) && (lastOther))
-			{
-				vector2d_sub(end, vector2d(x[i], y[i]), self->position);
-				vector2d_set_magnitude(&lastDirection, vector2d_magnitude(end) * 2);
-				vector2d_add(lastDirection, vector2d(x[i-1],y[i-1]), lastDirection);
-				// handle the case where we have to curve into a wall
-				FindLineCircleIntersections(self->position.x, self->position.y,
-					vector2d_magnitude(end),
-					vector2d(x[i - 1], y[i - 1]),
-					lastDirection,
-					&intersection1,
-					&intersection2
-					);
-				vector2d_sub(dir, intersection1, self->position);
-				vector2d_sub(end, vector2d(x[i], y[i]), self->position);
-				tmpAngle = vector2d_angle(dir);
-				if (tmpAngle < 0)
-					tmpAngle += 360;
-				tmpAngleEnd = vector2d_angle(end);
-				if (tmpAngleEnd < 0)
-					tmpAngleEnd += 360;
-				if ((((tmpAngle - tmpAngleEnd < 180) && (tmpAngleEnd < tmpAngle))) || ((tmpAngle - tmpAngleEnd < -180)))
-				{
-					filledPieRGBA(
-						gf2d_graphics_get_renderer(),
-						self->position.x, self->position.y,
-						vector2d_magnitude(end),
-						tmpAngleEnd,
-						tmpAngle,
-						color.w, color.x, color.y, color.z
-						);
-
-					filledTrigonRGBA(
-						gf2d_graphics_get_renderer(),
-						intersection1.x, intersection1.y,
-						x[i - 1], y[i - 1],
-						self->position.x, self->position.y,
-						color.w, color.x, color.y, color.z
-						);
-				}
-			}
-			else if (hit->other == NULL)
-			{
-				vector2d_sub(dir, vector2d(x[i - 1], y[i - 1]), self->position);
-				vector2d_sub(end, vector2d(x[i], y[i]), self->position);
-				tmpAngle = vector2d_angle(dir);
-				if (tmpAngle < 0)
-					tmpAngle += 360;
-				tmpAngleEnd = vector2d_angle(end);
-				if (tmpAngleEnd < 0)
-					tmpAngleEnd += 360;
-				if (((tmpAngle - tmpAngleEnd < 180)&&(tmpAngleEnd<tmpAngle)))
-					filledPieRGBA(
-						gf2d_graphics_get_renderer(),
-						self->position.x, self->position.y,
-						vector2d_magnitude(end),
-						tmpAngleEnd,
-						tmpAngle,
-						color.w, color.x, color.y, color.z
-						);
-				if ((tmpAngle - tmpAngleEnd < -180))
-					filledPieRGBA(
-					gf2d_graphics_get_renderer(),
-					self->position.x, self->position.y,
-					vector2d_magnitude(end),
-					tmpAngleEnd,
-					tmpAngle,
-					color.w, color.x, color.y, color.z
-					);
-			}
-			else
-			{
-				filledTrigonRGBA(
-					gf2d_graphics_get_renderer(),
-					x[i - 1], y[i - 1],
-					x[i], y[i],
-					self->position.x, self->position.y,
-					color.w, color.x, color.y, color.z
-					);
-			}
-		}
-		if ((hit->other == NULL)||(hit->hitpoint.x == hit->other->corners[3].x)|| (hit->hitpoint.x == hit->other->corners[0].x))
-			lastOther = false;
-		else
-		{
-
-			// calculate the last direction
-			if ((hit->hitpoint.x >= hit->other->corners[3].x)&&(hit->hitpoint.x <= hit->other->corners[0].x))
-			{
-				// we're either on the top or bottom side, point in the x direction
-				if (self->position.x > hit->hitpoint.x)
-				{
-					if (self->position.y > hit->hitpoint.y)
-						lastDirection = vector2d(-1,0);
-					else
-						lastDirection = vector2d(1,0);
-				}
-				else
-				{
-					if (self->position.y > hit->hitpoint.y)
-						lastDirection = vector2d(-1,0);
-					else
-						lastDirection = vector2d(1,0);
-				}
-			}
-			else
-			{
-				if (self->position.y > hit->hitpoint.y)
-				{
-					if (self->position.x > hit->hitpoint.x)
-						lastDirection = vector2d(0, 1);
-					else
-						lastDirection = vector2d(0, -1);
-				}
-				else
-				{
-					if (self->position.x > hit->hitpoint.x)
-						lastDirection = vector2d(0, 1);
-					else
-						lastDirection = vector2d(0, -1);
-				}
-			}
-			lastOther = true;
-		}
 		raycasthit_free(hit);
 		i++;
 	}
+	filledPolygonRGBA(
+		gf2d_graphics_get_renderer(),
+		x,
+		y,
+		numPoints,
+		color.w, color.x, color.y, color.z
+		);
 	pqlist_free(pts, raycasthit_free);
 	free(x);
 	free(y);
+}
+
+void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward, Vector4D color, double precision)
+{
+	draw_line_of_sight_2(self, layer, fov, forward, color, precision);
 }
 
 RaycastHit *raycast_through_all_entities(Vector2D start, Vector2D direction, int layer)
@@ -381,9 +241,11 @@ RaycastHit *raycast_through_all_entities(Vector2D start, Vector2D direction, int
 	RaycastHit *rtn = NULL;
 	float min = FLT_MAX;
 	float dist;
+	float fwdMag = vector2d_magnitude(direction);
 	int i, j;
 	Vector2D v1, v2, diff;
 
+	vector2d_sub(diff, direction, start);
 	for (i = 0; i < entity_manager.max_entities; i++)
 	{
 		if (entity_manager.ent_list[i].inUse == false)
@@ -395,7 +257,6 @@ RaycastHit *raycast_through_all_entities(Vector2D start, Vector2D direction, int
 			for (j = 0; j < 4; j++)
 			{
 				v1 = entity_manager.ent_list[i].coll->corners[j];
-				vector2d_sub(diff, direction, start);
 				if (j == 3)
 					v2 = entity_manager.ent_list[i].coll->corners[0];
 				else

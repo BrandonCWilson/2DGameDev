@@ -31,9 +31,7 @@ int pqlist_free_node_with_fuction(PriorityNode *node, void(*f)(void *))
 	if (node->data != NULL)
 	{
 		if (!f) return -1;
-		slog("fine i'll free your shit");
 		f(node->data);
-		slog("your shit is free");
 	}
 	free(node);
 	return 0;
