@@ -15,6 +15,7 @@ typedef struct Entity_s
 	char name[255];
 	int timer;
 	Vector2D position;
+	Vector2D lastPosition;
 	Vector2D scale;
 	BoxCollider *coll;
 	void(*update)(struct Entity_s *self);

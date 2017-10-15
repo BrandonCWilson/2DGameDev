@@ -2,11 +2,11 @@
 #include "player.h"
 #include "simple_logger.h"
 #include "testUpdate.h"
+#include "gf2d_draw.h"
 
 SDL_GameController *controller;
 SDL_Joystick *joystick;
 
-int i = 0;
 Vector2D direction = { 200,0 };
 
 void player_init(Entity *self)
@@ -32,10 +32,11 @@ void player_update(Entity *self)
 {
 	Entity *clickEnt;
 	int mx, my;
+	self->lastPosition = self->position;
 	if (!controller)
 	{
 		SDL_GetMouseState(&mx, &my);
-		//self->position = vector2d(mx, my);
+		self->position = vector2d(mx, my);
 	}
 	else
 	{
@@ -58,7 +59,6 @@ void player_update(Entity *self)
 	}
 	draw_line_of_sight(self, 1, 90, direction, vector4d(0,0,100,0), 20);
 	direction = vector2d_rotate(direction, 0.03);
-	i++;
 	self->timer += 1;
 }
 
@@ -69,5 +69,9 @@ void player_touch(Entity *self, Entity *other)
 		self->colorShift.x -= 5;
 		self->lastHit = self->timer;
 		sound_play(self->ouch, 0, 50, 1, 0);
+	}
+	if (other->layer == 1)
+	{
+		self->position = self->lastPosition;
 	}
 }

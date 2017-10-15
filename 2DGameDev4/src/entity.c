@@ -524,15 +524,12 @@ void entity_free(Entity *ent)
 void entity_update_all()
 {
 	int i;
-	entity_update_all_colliders();
-	check_box_collisions(2, 1);
 	for (i = 0; i < entity_manager.max_entities; i++)
 	{
 		if (entity_manager.ent_list[i].inUse)
 		{
 
-			vector2d_add(entity_manager.ent_list[i].position, entity_manager.ent_list[i].position, entity_manager.ent_list[i].velocity);
-
+			
 			// handle the entity think functions
 			if (!entity_manager.ent_list[i].update)
 			{
@@ -551,9 +548,11 @@ void entity_update_all()
 				entity_manager.ent_list[i].frame += 0.1;
 				if (entity_manager.ent_list[i].frame > 3.0)entity_manager.ent_list[i].frame = 0;
 			}
+			vector2d_add(entity_manager.ent_list[i].position, entity_manager.ent_list[i].position, entity_manager.ent_list[i].velocity);
 		}
-
 	}
+	entity_update_all_colliders();
+	check_box_collisions(2, 1);
 }
 
 void entity_draw(Entity *ent)
