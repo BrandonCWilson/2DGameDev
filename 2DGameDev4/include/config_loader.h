@@ -26,5 +26,7 @@ void config_loader_levels(char *filename);
 
 Entity * config_loader_get_prefab_by_name(char *name);
 
+Entity *copy_prefab(Entity *dst, Entity *src);
+
 FunctionParser funct[];
 #endif

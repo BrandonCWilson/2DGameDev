@@ -19,4 +19,6 @@ typedef struct
 Sound *sound_load(char *filename, float volume, int defaultChannel);
 
 void sound_play(Sound *sound, int loops, float volume, int channel, int group);
+
+void sound_free(Sound *sound);
 #endif

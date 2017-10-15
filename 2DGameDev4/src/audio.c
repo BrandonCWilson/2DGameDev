@@ -95,8 +95,6 @@ void sound_free(Sound *sound)
 	sound->ref_count--;
 }
 
-
-
 Sound *sound_new()
 {
 	int i;

@@ -18,7 +18,7 @@ typedef struct
 
 void draw_map(Map *m);
 
-TileMap *tilemap_load(char *filename);
+TileMap *tilemap_load(char *filename, Vector2D position);
 
 void tilemap_draw_walkable(TileMap *tilemap, Vector2D position);
 

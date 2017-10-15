@@ -13,3 +13,10 @@ BoxCollider *box_collider_new()
 	memset(rtn, 0, sizeof(BoxCollider));
 	return rtn;
 }
+
+void box_collider_free(BoxCollider *box)
+{
+	if (!box)
+		return;
+	free(box);
+}

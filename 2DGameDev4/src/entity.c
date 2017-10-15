@@ -15,7 +15,7 @@ typedef struct
 
 static EntManager entity_manager;
 
-void entitiy_update_all_colliders()
+void entity_update_all_colliders()
 {
 	int i, j;
 
@@ -34,22 +34,23 @@ void entitiy_update_all_colliders()
 					entity_manager.ent_list[i].coll->height * ((j % 3 > 0) ? 0 : 1))
 				);
 		}
-		gf2d_draw_line(
+		// collider line for debugging purposes
+		/*gf2d_draw_line(
 			entity_manager.ent_list[i].position,
 			entity_manager.ent_list[i].coll->corners[0],
-			vector4d(255, 255, 255, 255));
+			vector4d(0, 255, 255, 255));
 		gf2d_draw_line(
 			entity_manager.ent_list[i].position,
 			entity_manager.ent_list[i].coll->corners[1],
-			vector4d(255, 255, 255, 255));
+			vector4d(255, 0, 255, 255));
 		gf2d_draw_line(
 			entity_manager.ent_list[i].position,
 			entity_manager.ent_list[i].coll->corners[2],
-			vector4d(255, 255, 255, 255));
+			vector4d(255, 255, 0, 255));
 		gf2d_draw_line(
 			entity_manager.ent_list[i].position,
 			entity_manager.ent_list[i].coll->corners[3],
-			vector4d(255, 255, 255, 255));
+			vector4d(255, 255, 255, 255));*/
 	}
 }
 
@@ -91,6 +92,89 @@ int FindLineCircleIntersections(
 		t = (float)((-B - sqrt(det)) / (2 * A));
 		*intersection2 = vector2d(point1.x - t * dx, point1.y + t * dy);
 		return 2;
+	}
+}
+
+int get_box_overlap(BoxCollider *a, BoxCollider *b)
+{
+	BoxCollider *AB, *CD;
+	float A, B, C, D;
+	if (a->corners[3].x <= b->corners[3].x)
+	{
+		AB = a;
+		CD = b;
+	}
+	else
+	{
+		AB = b;
+		CD = a;
+	}
+	if (!((AB->corners[0].x - CD->corners[3].x > 0) && (CD->corners[0].x - AB->corners[3].x > 0)))
+		return 0;
+	if (a->corners[2].y <= b->corners[2].y)
+	{
+		AB = a;
+		CD = b;
+	}
+	else
+	{
+		AB = b;
+		CD = a;
+	}
+	if (!((AB->corners[3].y - CD->corners[2].y > 0) && (CD->corners[3].y - AB->corners[2].y > 0)))
+		return 0;
+	return 1;
+}
+
+void check_box_collisions(int layer1, int layer2)
+{
+	int i, j;
+	for (i = 0; i < entity_manager.max_entities; i++)
+	{
+		if (entity_manager.ent_list[i].inUse == false)
+			continue;
+		if (entity_manager.ent_list[i].coll == NULL)
+			continue;
+		if (entity_manager.ent_list[i].layer == layer1)
+		{
+			for (j = i + 1; j < entity_manager.max_entities; j++)
+			{
+				if (entity_manager.ent_list[j].inUse == false)
+					continue;
+				if (entity_manager.ent_list[j].coll == NULL)
+					continue;
+				if (entity_manager.ent_list[j].layer == layer2)
+				{
+					if (get_box_overlap(entity_manager.ent_list[i].coll, entity_manager.ent_list[j].coll) == 1)
+					{
+						if (entity_manager.ent_list[i].touch != NULL)
+							entity_manager.ent_list[i].touch(&entity_manager.ent_list[i], &entity_manager.ent_list[j]);
+						if (entity_manager.ent_list[j].touch != NULL)
+							entity_manager.ent_list[j].touch(&entity_manager.ent_list[j], &entity_manager.ent_list[i]);
+					}
+				}
+			}
+		}
+		else if (entity_manager.ent_list[i].layer == layer2)
+		{
+			for (j = i + 1; j < entity_manager.max_entities; j++)
+			{
+				if (entity_manager.ent_list[j].inUse == false)
+					continue;
+				if (entity_manager.ent_list[j].coll == NULL)
+					continue; 
+				if (entity_manager.ent_list[j].layer == layer1)
+				{
+					if (get_box_overlap(entity_manager.ent_list[i].coll, entity_manager.ent_list[j].coll) == 1)
+					{
+						if (entity_manager.ent_list[i].touch != NULL)
+							entity_manager.ent_list[i].touch(&entity_manager.ent_list[i], &entity_manager.ent_list[j]);
+						if (entity_manager.ent_list[j].touch != NULL)
+							entity_manager.ent_list[j].touch(&entity_manager.ent_list[j], &entity_manager.ent_list[i]);
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -422,6 +506,12 @@ Entity *entity_new()
 void entity_delete(Entity *ent)
 {
 	if (!ent)return;
+	if (ent->sprite != NULL)
+		gf2d_sprite_free(ent->sprite);
+	if (ent->ouch != NULL)
+		sound_free(ent->ouch);
+	if (ent->coll != NULL)
+		box_collider_free(ent->coll);
 	memset(ent, 0, sizeof(Entity));	//clean up the data
 }
 
@@ -434,7 +524,8 @@ void entity_free(Entity *ent)
 void entity_update_all()
 {
 	int i;
-	entitiy_update_all_colliders();
+	entity_update_all_colliders();
+	check_box_collisions(2, 1);
 	for (i = 0; i < entity_manager.max_entities; i++)
 	{
 		if (entity_manager.ent_list[i].inUse)
@@ -491,7 +582,23 @@ void entity_draw_all()
 	}
 }
 
+void entity_clear_all()
+{
+	int i;
+	for (i = 0; i < entity_manager.max_entities; i++)
+	{
+		entity_delete(&entity_manager.ent_list[i]);
+	}
+}
+
 void entity_system_close()
 {
-	slog("closing entity system..");
+	entity_clear_all();
+	if (entity_manager.ent_list != NULL)
+	{
+		free(entity_manager.ent_list);
+	}
+	entity_manager.ent_list = NULL;
+	entity_manager.max_entities = 0;
+	slog("Entity system closed");
 }

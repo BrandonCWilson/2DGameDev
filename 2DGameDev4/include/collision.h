@@ -19,4 +19,5 @@ typedef struct Collision_S
 
 BoxCollider *box_collider_new();
 
+void box_collider_free(BoxCollider *box);
 #endif

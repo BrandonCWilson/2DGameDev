@@ -4,6 +4,8 @@
 #include "simple_logger.h"
 #include "entity.h"
 #include <stdio.h>
+#include "player.h"
+#include "config_loader.h"
 
 void draw_tile(Tile *t, float tile_width, int x, int y)
 {
@@ -93,11 +95,12 @@ void tilemap_load_walls(TileMap *tilemap, Vector2D position)
 	}
 }
 
-TileMap *tilemap_load(char *filename)
+TileMap *tilemap_load(char *filename, Vector2D position)
 {
 	TileMap *tilemap;
-	Entity *ent;
+	Entity *ent, *prefab;
 	FILE *file;
+	int x, y;
 	char buffer[1024];
 	char spritefile[1024];
 	int framewidth, frameheight, framesperline;
@@ -177,7 +180,32 @@ TileMap *tilemap_load(char *filename)
 				}
 				strcat(tilemap->map, buffer);
 			}
-			continue;
+		}
+		if (strcmp(buffer, "entity:") == 0)
+		{
+			fscanf(file, "%s", buffer);
+			prefab = config_loader_get_prefab_by_name(buffer);
+			ent = entity_new();
+			copy_prefab(ent, prefab);
+			if (ent->init)
+				ent->init(ent);
+			while (fscanf(file, "%s", buffer) != EOF)
+			{
+				slog("%s", buffer);
+				if (buffer[0] == '#')
+				{
+					continue;
+				}
+				if (strcmp("entity_end", buffer) == 0)
+				{
+					break;
+				}
+				if (strcmp("position:", buffer) == 0)
+				{
+					fscanf(file, "%i,%i", &x, &y);
+					ent->position = vector2d(position.x + (x * tilemap->tileset->frame_w), position.y + (y * tilemap->tileset->frame_h));
+				}
+			}
 		}
 	}
 	fclose(file);

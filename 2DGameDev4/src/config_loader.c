@@ -8,6 +8,8 @@ FunctionParser funct[] =
 {
 	{ player_update, "player_update" }
 	,{ clickerUpdate, "clickerUpdate" }
+	,{ player_init, "player_init" }
+	,{ player_touch, "player_touch"}
 };
 
 int level_MAX_WIDTH = 0;
@@ -34,6 +36,31 @@ void * config_loader_char_to_function(char *fname)
 		}
 	}
 	return NULL;
+}
+
+Entity *copy_prefab(Entity *ent, Entity *prefab)
+{
+	if (prefab->update != NULL)
+		ent->update = prefab->update;
+	if (prefab->sprite != NULL)
+	{
+		ent->sprite = prefab->sprite;
+		ent->colorShift = vector4d(255, 255, 255, 255);
+	}
+	ent->layer = prefab->layer;
+	if (prefab->touch != NULL)
+		ent->touch = prefab->touch;
+	if (prefab->coll != NULL)
+	{
+		ent->coll = box_collider_new();
+		ent->coll->width = prefab->coll->width;
+		ent->coll->height = prefab->coll->height;
+		ent->coll->parent = ent;
+	}
+	if (prefab->ouch != NULL)
+	{
+		ent->ouch = prefab->ouch;
+	}
 }
 
 Entity * config_loader_get_prefab_by_name(char *name)
@@ -72,10 +99,13 @@ int config_loader_entities_init_count_incoming(char *filename)
 
 void config_loader_entities_init(char *filename)
 {
-	FILE *inFile;
+	FILE *file;
+	char otherfile[1024];
+	int int1, int2, int3, int4;
+	double collheight, collwidth;
+	float volume;
 	int numEnts;
-	char param[255];
-	char input[255];
+	char buffer[1024];
 	int i = 0;
 	int j;
 	// count the incoming prefabs and make some space
@@ -85,32 +115,68 @@ void config_loader_entities_init(char *filename)
 	memset(prefab_manager.prefab_list, 0, sizeof(Entity)*numEnts);
 	prefab_manager.max = numEnts;
 
-	inFile = fopen(filename, "r");
-	if (!inFile)
+	file = fopen(filename, "r");
+	if (!file)
 	{
 		slog("Unable to access the prefab file ents");
 		return;
 	}
-	while (fscanf(inFile, "%s %s\n", param, input) != EOF)
+	while (fscanf(file, "%s", buffer) != EOF)
 	{
-		if (strcmp(param, "ent:") == 0)
+		if (strcmp(buffer, "ent:") == 0)
 		{
-			for (j = 0; j < 255; j++)
+			fscanf(file, "%s", prefab_manager.prefab_list[i].name);
+			strcpy(buffer, prefab_manager.prefab_list[i].name);
+			while (strcmp(buffer, "END") != 0)
 			{
-				prefab_manager.prefab_list[i].name[j] = input[j];
-			}
-			while (strcmp(param, "END") != 0)
-			{
-				if (strcmp(param, "update:") == 0)
+				if (strcmp(buffer, "update:") == 0)
 				{
-					prefab_manager.prefab_list[i].update = config_loader_char_to_function(input);
+					fscanf(file, "%s", buffer);
+					prefab_manager.prefab_list[i].update = config_loader_char_to_function(buffer);
 				}
-				fscanf(inFile, "%s %s", param, input);
+				if (strcmp(buffer, "sprite:") == 0)
+				{
+					fscanf(file, "%s %i,%i,%i", otherfile, &int1, &int2, &int3);
+					if (strlen(otherfile) > 0)
+						prefab_manager.prefab_list[i].sprite = gf2d_sprite_load_all(otherfile, int1, int2, int3);
+				}
+				if (strcmp(buffer, "boxcollider:") == 0)
+				{
+					fscanf(file, "%lf,%lf", &collwidth, &collheight);
+					slog("boxcollider: %lf %lf", collwidth, collheight);
+					prefab_manager.prefab_list[i].coll = box_collider_new();
+					prefab_manager.prefab_list[i].coll->width = collwidth;
+					prefab_manager.prefab_list[i].coll->height = collheight;
+				}
+				if (strcmp(buffer, "ouch:") == 0)
+				{
+					fscanf(file, "%s %f,%i", otherfile, &volume, &int1);
+					if (strlen(otherfile) > 0)
+						prefab_manager.prefab_list[i].ouch = sound_load(otherfile, volume, int1);
+				}
+				if (strcmp(buffer, "layer:") == 0)
+				{
+					fscanf(file, "%i", &int1);
+					slog("reading: %s %i", buffer, int1);
+					prefab_manager.prefab_list[i].layer = int1;
+				}
+				if (strcmp(buffer, "init:") == 0)
+				{
+					fscanf(file, "%s", buffer);
+					prefab_manager.prefab_list[i].init = config_loader_char_to_function(buffer);
+				}
+				if (strcmp(buffer, "touch:") == 0)
+				{
+
+					fscanf(file, "%s", buffer);
+					prefab_manager.prefab_list[i].touch = config_loader_char_to_function(buffer);
+				}
+				fscanf(file, "%s", buffer);
 			}
 			i++;
 		}
 	}
-	fclose(inFile);
+	fclose(file);
 	slog("Initialized the prefab array");
 }
 

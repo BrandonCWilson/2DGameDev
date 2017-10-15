@@ -3,6 +3,7 @@
 #include "gf2d_sprite.h"
 #include "collision.h"
 #include "raycast.h"
+#include "audio.h"
 
 #ifndef _ENTITY_H_
 #define _ENTITY_H_
@@ -17,6 +18,10 @@ typedef struct Entity_s
 	Vector2D scale;
 	BoxCollider *coll;
 	void(*update)(struct Entity_s *self);
+	void(*touch)(struct Entity_s *self, struct Entity_s *other);
+	void(*init)(struct Entity_s *self);
+	Sound *ouch;
+	int lastHit;
 	Sprite *sprite;
 	float frame;
 	Vector2D velocity;

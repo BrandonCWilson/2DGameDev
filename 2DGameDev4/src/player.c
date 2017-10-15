@@ -35,7 +35,7 @@ void player_update(Entity *self)
 	if (!controller)
 	{
 		SDL_GetMouseState(&mx, &my);
-		self->position = vector2d(mx, my);
+		//self->position = vector2d(mx, my);
 	}
 	else
 	{
@@ -57,6 +57,17 @@ void player_update(Entity *self)
 		}
 	}
 	draw_line_of_sight(self, 1, 90, direction, vector4d(0,0,100,0), 20);
-	direction = vector2d_rotate(direction, 0.005);
+	direction = vector2d_rotate(direction, 0.03);
 	i++;
+	self->timer += 1;
+}
+
+void player_touch(Entity *self, Entity *other)
+{
+	if (self->timer - self->lastHit > 60)
+	{
+		self->colorShift.x -= 5;
+		self->lastHit = self->timer;
+		sound_play(self->ouch, 0, 50, 1, 0);
+	}
 }
