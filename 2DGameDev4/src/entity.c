@@ -679,5 +679,4 @@ void entity_system_close()
 	}
 	entity_manager.ent_list = NULL;
 	entity_manager.max_entities = 0;
-	slog("Entity system closed");
 }

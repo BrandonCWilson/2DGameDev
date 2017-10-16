@@ -51,7 +51,7 @@ PF_PathArray *convert_path_to_vector2d_array(PF_Path *path);
 
 PF_Graph *get_current_graph();
 
-void path_free_all_parents(PF_Path *path)
+void path_free_all_parents(PF_Path *path);
 
 void patharray_free(PF_PathArray *pa);
 

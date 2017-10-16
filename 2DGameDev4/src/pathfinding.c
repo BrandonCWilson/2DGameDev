@@ -32,13 +32,15 @@ void patharray_free(PF_PathArray *pa)
 {
 	if (!pa)
 		return;
-	free(pa->path);
+	if (pa->path != NULL)
+		free(pa->path);
 	free(pa);
 }
 
 void path_free_all_parents(PF_Path *path)
 {
 	PF_Path *parent, *cursor;
+	int i = 0;
 	if (!path)
 		return;
 	cursor = path;

@@ -1,12 +1,12 @@
 ﻿  pathfinding.c
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\pathfinding.c(47): warning C4047: 'function': 'int' differs in levels of indirection from 'void *'
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\pathfinding.c(47): warning C4024: 'memset': different types for formal and actual parameter 2
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\pathfinding.c(49): warning C4047: '=': 'PF_Node **' differs in levels of indirection from 'PF_Node *'
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\pathfinding.c(50): warning C4047: 'function': 'int' differs in levels of indirection from 'void *'
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\pathfinding.c(50): warning C4024: 'memset': different types for formal and actual parameter 2
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\pathfinding.c(168): warning C4101: 'tmp': unreferenced local variable
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\pathfinding.c(201): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\pathfinding.c(203): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\pathfinding.c(205): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\pathfinding.c(207): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\pathfinding.c(71): warning C4047: 'function': 'int' differs in levels of indirection from 'void *'
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\pathfinding.c(71): warning C4024: 'memset': different types for formal and actual parameter 2
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\pathfinding.c(73): warning C4047: '=': 'PF_Node **' differs in levels of indirection from 'PF_Node *'
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\pathfinding.c(74): warning C4047: 'function': 'int' differs in levels of indirection from 'void *'
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\pathfinding.c(74): warning C4024: 'memset': different types for formal and actual parameter 2
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\pathfinding.c(192): warning C4101: 'tmp': unreferenced local variable
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\pathfinding.c(225): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\pathfinding.c(227): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\pathfinding.c(229): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\pathfinding.c(231): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
   2DGameDev4.vcxproj -> C:\Users\Brando\Documents\Visual Studio 2015\Projects\2DGameDev4\Debug\2DGameDev4.exe
