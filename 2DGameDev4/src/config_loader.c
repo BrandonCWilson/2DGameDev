@@ -71,6 +71,8 @@ Entity *copy_prefab(Entity *ent, Entity *prefab)
 	}
 	if (prefab->init != NULL)
 		ent->init = prefab->init;
+	if (prefab->projectile != NULL)
+		ent->projectile = prefab->projectile;
 	ent->scale = prefab->scale;
 	ent->spriteOffset = prefab->spriteOffset;
 	ent->fov = prefab->fov;
@@ -173,6 +175,7 @@ void config_loader_entities_init(char *filename)
 				if (strcmp(buffer, "layer:") == 0)
 				{
 					fscanf(file, "%i", &int1);
+					slog("layer: %i", int1);
 					prefab_manager.prefab_list[i].layer = int1;
 				}
 				if (strcmp(buffer, "init:") == 0)
@@ -210,6 +213,11 @@ void config_loader_entities_init(char *filename)
 				{
 					fscanf(file, "%f", &scalex);
 					prefab_manager.prefab_list[i].moveSpeed = scalex;
+				}
+				if (strcmp(buffer, "projectile:") == 0)
+				{
+					fscanf(file, "%s", buffer);
+					prefab_manager.prefab_list[i].projectile = config_loader_get_prefab_by_name(buffer);
 				}
 				fscanf(file, "%s", buffer);
 			}

@@ -4,6 +4,11 @@
 
 void arrow_update(Entity *self)
 {
+	self->timer += 1;
+	if (self->timer >= 360)
+	{
+		entity_free(self);
+	}
 }
 
 void arrow_touch(Entity *self, Entity *other)

@@ -29,6 +29,8 @@ typedef struct Entity_s
 	double fov;
 	double maxSight;
 
+	struct Entity_s *projectile;
+
 	BoxCollider *coll;
 	void(*update)(struct Entity_s *self);
 	void(*touch)(struct Entity_s *self, struct Entity_s *other);

@@ -3,6 +3,7 @@
 #include "simple_logger.h"
 #include "testUpdate.h"
 #include "gf2d_draw.h"
+#include "config_loader.h"
 
 SDL_GameController *controller;
 SDL_Joystick *joystick;
@@ -42,7 +43,7 @@ void player_init(Entity *self)
 
 void player_update(Entity *self)
 {
-	Entity *clickEnt;
+	Entity *projectile;
 	int mx, my;
 	self->lastPosition = self->position;
 	if (!controller)
@@ -56,15 +57,19 @@ void player_update(Entity *self)
 		self->velocity.y = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTY) / (double)10000;
 		if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_A))
 		{
-			clickEnt = entity_new();
-			if (clickEnt != NULL)
+			if (self->projectile != NULL)
 			{
-				clickEnt->sprite = self->sprite;
-				clickEnt->timer = 0;
-				clickEnt->position = vector2d(self->position.x, self->position.y);
-				clickEnt->velocity = vector2d(10.0, 0);
-				clickEnt->update = clickerUpdate;
-				clickEnt->colorShift = vector4d((int)(rand() % 255), (int)(rand() % 255), (int)(rand() % 255), 255);
+				projectile = entity_new();
+				if (projectile != NULL)
+				{
+					copy_prefab(projectile, self->projectile);
+					projectile->position = self->position;
+					projectile->velocity = self->velocity;
+				}
+			}
+			else
+			{
+				slog("no projectile to spawn");
 			}
 		}
 	}

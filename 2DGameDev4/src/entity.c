@@ -47,23 +47,31 @@ bool entity_can_i_see_you(Entity *self, Entity *other)
 	{
 		return 0;
 	}
-	vector2d_set_magnitude(&dir, self->maxSight);
 	vector2d_add(end, dir, self->position);
 	// check for walls blocking vision
 	hit = raycast_through_all_entities(self->position, end, 1);
 	if (!hit)
 		return 0;
-	if ((hit->hitpoint.x != end.x) || (hit->hitpoint.y != end.y))
+	if (hit->other != NULL)
+	{
+		gf2d_draw_line(self->position, hit->hitpoint, vector4d(255, 0, 0, 255));
 		return 0;
+	}
+	gf2d_draw_line(self->position, hit->hitpoint, vector4d(0, 255, 0, 255));
 	raycasthit_free(hit);
 	// check if we can see the ent on its own layer
 	hit = raycast_through_all_entities(self->position, end, other->layer);
 	if (!hit)
 		return 0;
 	if (hit->other == NULL)
+	{
+		raycasthit_free(hit);
 		return 0;
+	}
+	gf2d_draw_line(self->position, hit->hitpoint, vector4d(255, 255, 255, 255));
 	if (hit->other->parent == other)
 		return 1;
+	raycasthit_free(hit);
 	return 0;
 }
 

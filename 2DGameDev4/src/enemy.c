@@ -60,7 +60,7 @@ void archer_update(Entity *self)
 	direction = self->forward;
 	
 	vector2d_set_magnitude(&direction, self->maxSight);
-	draw_line_of_sight(self, 1, 90, direction, color, 20);
+	draw_line_of_sight(self, 1, self->fov, direction, color, 20);
 	self->forward = vector2d_rotate(self->forward, 0.05);
 	vector2d_sub(start, self->position, map->position);
 	start = vector2d((int)(start.x / map->tileset->frame_w), (int)(start.y / map->tileset->frame_h));
