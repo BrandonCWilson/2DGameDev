@@ -24,6 +24,7 @@ typedef struct Entity_s
 	Vector2D scale;
 	Vector2D spriteOffset;
 
+	double moveSpeed;
 	Vector2D forward;
 	double fov;
 	double maxSight;

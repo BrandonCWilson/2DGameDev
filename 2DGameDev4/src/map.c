@@ -7,6 +7,18 @@
 #include "player.h"
 #include "config_loader.h"
 
+TileMap *currentmap;
+
+void set_current_tilemap(TileMap *map)
+{
+	currentmap = map;
+}
+
+TileMap *get_current_tilemap()
+{
+	return currentmap;
+}
+
 void draw_tile(Tile *t, float tile_width, int x, int y)
 {
 	// check if tile is on or near screen
@@ -210,6 +222,8 @@ TileMap *tilemap_load(char *filename, Vector2D position)
 		}
 	}
 	fclose(file);
+	set_current_tilemap(tilemap);
+	tilemap->position = position;
 	return tilemap;
 }
 

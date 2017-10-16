@@ -14,6 +14,7 @@ typedef struct
 	Vector2D start, end;
 	Sprite *tileset;
 	char *map;
+	Vector2D position;
 }TileMap;
 
 void draw_map(Map *m);
@@ -25,4 +26,6 @@ void tilemap_draw_walkable(TileMap *tilemap, Vector2D position);
 void tilemap_draw_walls(TileMap *tilemap, Vector2D position);
 
 void tilemap_load_walls(TileMap *tilemap, Vector2D position);
+
+TileMap *get_current_tilemap();
 #endif

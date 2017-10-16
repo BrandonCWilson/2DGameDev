@@ -242,7 +242,6 @@ PF_PathArray *patharray_new()
 		return NULL;
 	}
 	memset(pa, 0, sizeof(PF_PathArray));
-	slog("returning pa..");
 	return pa;
 }
 

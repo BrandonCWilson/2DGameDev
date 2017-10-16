@@ -76,6 +76,7 @@ Entity *copy_prefab(Entity *ent, Entity *prefab)
 	ent->fov = prefab->fov;
 	ent->maxSight = prefab->maxSight;
 	ent->forward = vector2d(1, 0);
+	ent->moveSpeed = prefab->moveSpeed;
 }
 
 Entity * config_loader_get_prefab_by_name(char *name)
@@ -203,8 +204,12 @@ void config_loader_entities_init(char *filename)
 				if (strcmp(buffer, "maxsight:") == 0)
 				{
 					fscanf(file, "%f", &scalex);
-					slog("maxsight: %f", scalex);
 					prefab_manager.prefab_list[i].maxSight = scalex;
+				}
+				if (strcmp(buffer, "movespeed:") == 0)
+				{
+					fscanf(file, "%f", &scalex);
+					prefab_manager.prefab_list[i].moveSpeed = scalex;
 				}
 				fscanf(file, "%s", buffer);
 			}
