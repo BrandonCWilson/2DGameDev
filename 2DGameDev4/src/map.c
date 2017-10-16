@@ -189,9 +189,10 @@ TileMap *tilemap_load(char *filename, Vector2D position)
 			copy_prefab(ent, prefab);
 			if (ent->init)
 				ent->init(ent);
+			else
+				slog("cannot find an init function: %s", buffer);
 			while (fscanf(file, "%s", buffer) != EOF)
 			{
-				slog("%s", buffer);
 				if (buffer[0] == '#')
 				{
 					continue;

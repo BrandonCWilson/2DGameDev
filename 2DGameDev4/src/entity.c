@@ -15,6 +15,86 @@ typedef struct
 
 static EntManager entity_manager;
 
+bool entity_can_i_see_you(Entity *self, Entity *other)
+{
+	int i;
+	double tmpAngle;
+	double distPlayer, distMAX;
+	float initialAngle, endAngle;
+	Vector2D dir, end, rotated, longestColl;
+	RaycastHit *hit;
+	dir = self->forward;
+	rotated = vector2d_rotate(dir, self->fov * GF2D_PI / 180);
+	initialAngle = vector2d_angle(dir); endAngle = vector2d_angle(rotated);
+	if (initialAngle < 0)
+		initialAngle = initialAngle + 360;
+	if (endAngle < 0)
+		endAngle = endAngle + 360;
+	if (endAngle - initialAngle < 0)
+	{
+		endAngle = endAngle + 360;
+	}
+	end = vector2d(other->position.x + other->coll->width / 2, other->position.y + other->coll->height / 2);
+	vector2d_sub(dir, end, self->position);
+	vector2d_sub(longestColl, other->coll->corners[2], other->coll->corners[0]);
+	if (self->maxSight + vector2d_magnitude(longestColl) / 2 < vector2d_magnitude(dir))
+		return 0;
+	tmpAngle = vector2d_angle(dir);
+	if (tmpAngle < 0)
+		tmpAngle += 360;
+	if (!((!((tmpAngle <= initialAngle) || (tmpAngle >= endAngle)))
+		|| ((360 < endAngle) && (tmpAngle <= endAngle - 360))))
+	{
+		return 0;
+	}
+	vector2d_set_magnitude(&dir, self->maxSight);
+	vector2d_add(end, dir, self->position);
+	// check for walls blocking vision
+	hit = raycast_through_all_entities(self->position, end, 1);
+	if (!hit)
+		return 0;
+	if ((hit->hitpoint.x != end.x) || (hit->hitpoint.y != end.y))
+		return 0;
+	raycasthit_free(hit);
+	// check if we can see the ent on its own layer
+	hit = raycast_through_all_entities(self->position, end, other->layer);
+	if (!hit)
+		return 0;
+	if (hit->other == NULL)
+		return 0;
+	if (hit->other->parent == other)
+		return 1;
+	return 0;
+}
+
+Entity *entity_closest_in_sight_by_layer(Entity *self, int layer)
+{
+	int i;
+	Entity *closest = NULL;
+	Vector2D diff;
+	double minDist = DBL_MAX;
+	for (i = 0; i < entity_manager.max_entities; i++)
+	{
+		if (!entity_manager.ent_list[i].inUse)
+			continue;
+		if (entity_manager.ent_list[i].layer != layer)
+			continue;
+		if (entity_can_i_see_you(self, &entity_manager.ent_list[i]) == 1)
+		{
+			vector2d_sub(diff, 
+				vector2d(entity_manager.ent_list[i].position.x + entity_manager.ent_list[i].coll->width / 2,
+					entity_manager.ent_list[i].position.y + entity_manager.ent_list[i].coll->height / 2),
+				self->position);
+			if (vector2d_magnitude_squared(diff) < minDist)
+			{
+				closest = &entity_manager.ent_list[i];
+				minDist = vector2d_magnitude_squared(diff);
+			}
+		}
+	}
+	return closest;
+}
+
 void entity_update_all_colliders()
 {
 	int i, j;
@@ -524,6 +604,8 @@ void entity_free(Entity *ent)
 void entity_update_all()
 {
 	int i;
+	entity_update_all_colliders();
+	check_box_collisions(2, 1);
 	for (i = 0; i < entity_manager.max_entities; i++)
 	{
 		if (entity_manager.ent_list[i].inUse)
@@ -546,13 +628,11 @@ void entity_update_all()
 			else
 			{
 				entity_manager.ent_list[i].frame += 0.1;
-				if (entity_manager.ent_list[i].frame > 3.0)entity_manager.ent_list[i].frame = 0;
+				if (entity_manager.ent_list[i].frame > entity_manager.ent_list[i].sprite->frames_per_line)entity_manager.ent_list[i].frame = 0;
 			}
 			vector2d_add(entity_manager.ent_list[i].position, entity_manager.ent_list[i].position, entity_manager.ent_list[i].velocity);
 		}
 	}
-	entity_update_all_colliders();
-	check_box_collisions(2, 1);
 }
 
 void entity_draw(Entity *ent)
@@ -562,7 +642,7 @@ void entity_draw(Entity *ent)
 
 	gf2d_sprite_draw(
 		ent->sprite,
-		ent->position,
+		vector2d(ent->position.x + ent->spriteOffset.x, ent->position.y + ent->spriteOffset.y),
 		&ent->scale,
 		NULL,
 		NULL,

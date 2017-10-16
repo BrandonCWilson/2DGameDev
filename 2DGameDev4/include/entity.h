@@ -13,19 +13,30 @@ typedef struct Entity_s
 	bool inUse;
 	int layer;
 	char name[255];
+
+	int health;
+	int damage;
+
 	int timer;
 	Vector2D position;
+	Vector2D velocity;
 	Vector2D lastPosition;
 	Vector2D scale;
+	Vector2D spriteOffset;
+
+	Vector2D forward;
+	double fov;
+	double maxSight;
+
 	BoxCollider *coll;
 	void(*update)(struct Entity_s *self);
 	void(*touch)(struct Entity_s *self, struct Entity_s *other);
 	void(*init)(struct Entity_s *self);
+	
 	Sound *ouch;
 	int lastHit;
 	Sprite *sprite;
 	float frame;
-	Vector2D velocity;
 	Vector4D colorShift;
 } Entity;
 
@@ -45,6 +56,10 @@ void entity_delete(Entity *ent);
 void entity_free(Entity *ent);
 
 void entity_update_all();
+
+Entity *entity_closest_in_sight_by_layer(Entity *self, int layer);
+
+bool entity_can_i_see_you(Entity *self, Entity *other);
 
 void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D direction, Vector4D color, double degreesToCheck);
 

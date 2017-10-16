@@ -9,11 +9,23 @@ SDL_Joystick *joystick;
 
 Vector2D direction = { 200,0 };
 
+Entity *player;
+
+void set_player(Entity *ent)
+{
+	player = ent;
+}
+Entity *get_player()
+{
+	return player;
+}
+
 void player_init(Entity *self)
 {
 	int i;
 	controller = NULL;
 	joystick = NULL;
+	set_player(self);
 	for (i = 0; i < SDL_NumJoysticks(); ++i) {
 		if (SDL_IsGameController(i)) {
 			slog("Index \'%i\' is a compatible controller, named \'%s\'\n", i, SDL_GameControllerNameForIndex(i));
@@ -40,9 +52,8 @@ void player_update(Entity *self)
 	}
 	else
 	{
-		self->position.x += SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTX) / (double)10000;
-		self->position.y += SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTY) / (double)10000;
-
+		self->velocity.x = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTX) / (double)10000;
+		self->velocity.y = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTY) / (double)10000;
 		if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_A))
 		{
 			clickEnt = entity_new();
@@ -57,8 +68,6 @@ void player_update(Entity *self)
 			}
 		}
 	}
-	draw_line_of_sight(self, 1, 90, direction, vector4d(0,0,100,0), 20);
-	direction = vector2d_rotate(direction, 0.03);
 	self->timer += 1;
 }
 

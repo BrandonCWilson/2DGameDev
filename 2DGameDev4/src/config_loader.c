@@ -3,13 +3,21 @@
 #include "simple_logger.h"
 #include "priority_queue.h"
 #include "testUpdate.h"
+#include "projectile.h"
+#include "enemy.h"
 
 FunctionParser funct[] =
 {
 	{ player_update, "player_update" }
 	,{ clickerUpdate, "clickerUpdate" }
 	,{ player_init, "player_init" }
-	,{ player_touch, "player_touch"}
+	,{ player_touch, "player_touch" }
+	,{ arrow_update, "arrow_update" }
+	,{ arrow_init, "arrow_init" }
+	,{ arrow_touch, "arrow_touch" }
+	,{ archer_init, "archer_init" }
+	,{ archer_touch, "archer_touch" }
+	,{ archer_update, "archer_update" }
 };
 
 int level_MAX_WIDTH = 0;
@@ -61,6 +69,13 @@ Entity *copy_prefab(Entity *ent, Entity *prefab)
 	{
 		ent->ouch = prefab->ouch;
 	}
+	if (prefab->init != NULL)
+		ent->init = prefab->init;
+	ent->scale = prefab->scale;
+	ent->spriteOffset = prefab->spriteOffset;
+	ent->fov = prefab->fov;
+	ent->maxSight = prefab->maxSight;
+	ent->forward = vector2d(1, 0);
 }
 
 Entity * config_loader_get_prefab_by_name(char *name)
@@ -104,6 +119,7 @@ void config_loader_entities_init(char *filename)
 	int int1, int2, int3, int4;
 	double collheight, collwidth;
 	float volume;
+	float scalex, scaley;
 	int numEnts;
 	char buffer[1024];
 	int i = 0;
@@ -143,7 +159,6 @@ void config_loader_entities_init(char *filename)
 				if (strcmp(buffer, "boxcollider:") == 0)
 				{
 					fscanf(file, "%lf,%lf", &collwidth, &collheight);
-					slog("boxcollider: %lf %lf", collwidth, collheight);
 					prefab_manager.prefab_list[i].coll = box_collider_new();
 					prefab_manager.prefab_list[i].coll->width = collwidth;
 					prefab_manager.prefab_list[i].coll->height = collheight;
@@ -157,7 +172,6 @@ void config_loader_entities_init(char *filename)
 				if (strcmp(buffer, "layer:") == 0)
 				{
 					fscanf(file, "%i", &int1);
-					slog("reading: %s %i", buffer, int1);
 					prefab_manager.prefab_list[i].layer = int1;
 				}
 				if (strcmp(buffer, "init:") == 0)
@@ -171,9 +185,31 @@ void config_loader_entities_init(char *filename)
 					fscanf(file, "%s", buffer);
 					prefab_manager.prefab_list[i].touch = config_loader_char_to_function(buffer);
 				}
+				if (strcmp(buffer, "scale:") == 0)
+				{
+					fscanf(file, "%f,%f", &scalex, &scaley);
+					prefab_manager.prefab_list[i].scale = vector2d(scalex, scaley);
+				}
+				if (strcmp(buffer, "spriteoffset:") == 0)
+				{
+					fscanf(file, "%f,%f", &scalex, &scaley);
+					prefab_manager.prefab_list[i].spriteOffset = vector2d(scalex, scaley);
+				}
+				if (strcmp(buffer, "fov:") == 0)
+				{
+					fscanf(file, "%i", &int1);
+					prefab_manager.prefab_list[i].fov = int1;
+				}
+				if (strcmp(buffer, "maxsight:") == 0)
+				{
+					fscanf(file, "%f", &scalex);
+					slog("maxsight: %f", scalex);
+					prefab_manager.prefab_list[i].maxSight = scalex;
+				}
 				fscanf(file, "%s", buffer);
 			}
 			i++;
+			slog("%s", buffer);
 		}
 	}
 	fclose(file);

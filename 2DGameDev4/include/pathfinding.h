@@ -49,4 +49,11 @@ PF_Path *pathfinding_get_path(PF_Graph *graph, Vector2D start, Vector2D end);
 
 PF_PathArray *convert_path_to_vector2d_array(PF_Path *path);
 
+PF_Graph *get_current_graph();
+
+void path_free_all_parents(PF_Path *path)
+
+void patharray_free(PF_PathArray *pa);
+
+void path_free(PF_Path *path);
 #endif

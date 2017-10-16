@@ -2,6 +2,18 @@
 #include "simple_logger.h"
 #include <stdint.h>
 
+PF_Graph *currentGraph;
+
+PF_Graph *get_current_graph()
+{
+	return currentGraph;
+}
+
+void set_current_graph(PF_Graph *graph)
+{
+	currentGraph = graph;
+}
+
 PF_Path *path_new()
 {
 	PF_Path *path;
@@ -14,6 +26,28 @@ PF_Path *path_new()
 	}
 	memset(path, 0, sizeof(PF_Path));
 	return path;
+}
+
+void patharray_free(PF_PathArray *pa)
+{
+	if (!pa)
+		return;
+	free(pa->path);
+	free(pa);
+}
+
+void path_free_all_parents(PF_Path *path)
+{
+	PF_Path *parent, *cursor;
+	if (!path)
+		return;
+	cursor = path;
+	while (cursor != NULL)
+	{
+		parent = cursor->parent;
+		path_free(cursor);
+		cursor = parent;
+	}
 }
 
 void path_free(PF_Path *path)
@@ -116,6 +150,7 @@ PF_Graph *pathfinding_generate_graph_from_tilemap(TileMap *t)
 			counter += 1;
 		}
 	}
+	set_current_graph(graph);
 	return graph;
 }
 
@@ -165,7 +200,7 @@ int is_edge_in_list(PriorityQueueList *pq, PF_Edge *edge)
 	}
 	if (pq->head == NULL)
 	{
-		slog("pqlist is empty");
+		//slog("pqlist is empty");
 		return 0;
 	}
 	pn = pq->head;

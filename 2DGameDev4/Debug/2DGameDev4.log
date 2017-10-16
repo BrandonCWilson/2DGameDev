@@ -1,41 +1,12 @@
-﻿  entity.c
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(22): warning C4018: '<': signed/unsigned mismatch
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(64): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(65): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(68): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(71): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(101): warning C4101: 'B': unreferenced local variable
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(101): warning C4101: 'D': unreferenced local variable
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(101): warning C4101: 'A': unreferenced local variable
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(101): warning C4101: 'C': unreferenced local variable
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(132): warning C4018: '<': signed/unsigned mismatch
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(140): warning C4018: '<': signed/unsigned mismatch
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(160): warning C4018: '<': signed/unsigned mismatch
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(192): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(199): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(229): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(236): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(286): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(310): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(321): warning C4018: '<': signed/unsigned mismatch
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(351): warning C4305: 'function': truncation from 'double' to 'float'
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(358): warning C4305: 'function': truncation from 'double' to 'float'
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(383): warning C4244: '=': conversion from 'double' to 'Sint16', possible loss of data
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(384): warning C4244: '=': conversion from 'double' to 'Sint16', possible loss of data
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(385): warning C4244: '=': conversion from 'double' to 'Sint16', possible loss of data
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(386): warning C4244: '=': conversion from 'double' to 'Sint16', possible loss of data
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(400): warning C4244: 'function': conversion from 'double' to 'Uint8', possible loss of data
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(401): warning C4244: 'function': conversion from 'double' to 'Uint8', possible loss of data
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(275): warning C4101: 'fovcompare': unreferenced local variable
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(277): warning C4101: 'intersection2': unreferenced local variable
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(278): warning C4101: 'tangent': unreferenced local variable
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(277): warning C4101: 'intersection1': unreferenced local variable
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(423): warning C4018: '<': signed/unsigned mismatch
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(485): warning C4113: 'void (__cdecl *)()' differs in parameter lists from 'void (__cdecl *)(void)'
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(473): warning C4101: 'i': unreferenced local variable
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(492): warning C4018: '<': signed/unsigned mismatch
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(527): warning C4018: '<': signed/unsigned mismatch
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(548): warning C4305: '+=': truncation from 'double' to 'float'
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(577): warning C4018: '<': signed/unsigned mismatch
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\entity.c(587): warning C4018: '<': signed/unsigned mismatch
+﻿  pathfinding.c
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\pathfinding.c(47): warning C4047: 'function': 'int' differs in levels of indirection from 'void *'
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\pathfinding.c(47): warning C4024: 'memset': different types for formal and actual parameter 2
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\pathfinding.c(49): warning C4047: '=': 'PF_Node **' differs in levels of indirection from 'PF_Node *'
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\pathfinding.c(50): warning C4047: 'function': 'int' differs in levels of indirection from 'void *'
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\pathfinding.c(50): warning C4024: 'memset': different types for formal and actual parameter 2
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\pathfinding.c(168): warning C4101: 'tmp': unreferenced local variable
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\pathfinding.c(201): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\pathfinding.c(203): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\pathfinding.c(205): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\pathfinding.c(207): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
   2DGameDev4.vcxproj -> C:\Users\Brando\Documents\Visual Studio 2015\Projects\2DGameDev4\Debug\2DGameDev4.exe
