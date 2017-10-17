@@ -80,6 +80,7 @@ Entity *copy_prefab(Entity *ent, Entity *prefab)
 	ent->forward = vector2d(1, 0);
 	ent->moveSpeed = prefab->moveSpeed;
 	ent->turnSpeed = prefab->turnSpeed;
+	ent->huntRadius = prefab->huntRadius;
 }
 
 Entity * config_loader_get_prefab_by_name(char *name)
@@ -224,6 +225,11 @@ void config_loader_entities_init(char *filename)
 				{
 					fscanf(file, "%s", buffer);
 					prefab_manager.prefab_list[i].projectile = config_loader_get_prefab_by_name(buffer);
+				}
+				if (strcmp(buffer, "huntradius:") == 0)
+				{
+					fscanf(file, "%f", &scalex);
+					prefab_manager.prefab_list[i].huntRadius = scalex;
 				}
 				fscanf(file, "%s", buffer);
 			}

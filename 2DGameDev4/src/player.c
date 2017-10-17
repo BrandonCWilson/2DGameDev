@@ -39,12 +39,25 @@ void player_init(Entity *self)
 	}
 	if (!controller)
 		slog("Unable to find a controller..");
+	if (self->coll != NULL)
+	{
+		self->eyePos = vector2d(
+			self->coll->width / 2,
+			self->coll->height / 2);
+	}
 }
 
 void player_update(Entity *self)
 {
 	Entity *projectile;
 	int mx, my;
+	Vector2D direction;
+	Vector2D eyePos;
+
+	vector2d_add(eyePos, self->position, self->eyePos);
+
+	direction = self->forward;
+	direction = vector2d_rotate(direction, 90 * GF2D_PI / -360);
 	self->lastPosition = self->position;
 	if (!controller)
 	{
@@ -53,8 +66,10 @@ void player_update(Entity *self)
 	}
 	else
 	{
-		self->velocity.x = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTX) / (double)10000;
-		self->velocity.y = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTY) / (double)10000;
+		//self->velocity.x = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTX) / (double)10000;
+		//self->velocity.y = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTY) / (double)10000;
+		self->forward = vector2d(SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_RIGHTX), SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_RIGHTY));
+		vector2d_set_magnitude(&self->forward, 300);
 		if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_A))
 		{
 			if (self->projectile != NULL)
@@ -73,6 +88,7 @@ void player_update(Entity *self)
 			}
 		}
 	}
+	draw_line_of_sight(self, 1, 90, direction, vector4d(255,255,70,255), 10, eyePos);
 	self->timer += 1;
 }
 
@@ -82,7 +98,7 @@ void player_touch(Entity *self, Entity *other)
 	{
 		self->colorShift.x -= 5;
 		self->lastHit = self->timer;
-		sound_play(self->ouch, 0, 50, 1, 0);
+		sound_play(self->ouch, 0, self->ouch->volume, self->ouch->defaultChannel, 0);
 	}
 	if (other->layer == 1)
 	{

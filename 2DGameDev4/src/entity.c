@@ -54,10 +54,10 @@ bool entity_can_i_see_you(Entity *self, Entity *other, Vector2D eyePos, Vector2D
 		return 0;
 	if (hit->other != NULL)
 	{
-		gf2d_draw_line(eyePos, hit->hitpoint, vector4d(255, 0, 0, 255));
+		//gf2d_draw_line(eyePos, hit->hitpoint, vector4d(255, 0, 0, 255));
 		return 0;
 	}
-	gf2d_draw_line(eyePos, hit->hitpoint, vector4d(0, 255, 0, 255));
+	//gf2d_draw_line(eyePos, hit->hitpoint, vector4d(0, 255, 0, 255));
 	raycasthit_free(hit);
 	// check if we can see the ent on its own layer
 	hit = raycast_through_all_entities(eyePos, end, other->layer);
@@ -125,7 +125,7 @@ void entity_update_all_colliders()
 				);
 		}
 		// collider line for debugging purposes
-		/*gf2d_draw_line(
+		gf2d_draw_line(
 			entity_manager.ent_list[i].position,
 			entity_manager.ent_list[i].coll->corners[0],
 			vector4d(0, 255, 255, 255));
@@ -140,16 +140,16 @@ void entity_update_all_colliders()
 		gf2d_draw_line(
 			entity_manager.ent_list[i].position,
 			entity_manager.ent_list[i].coll->corners[3],
-			vector4d(255, 255, 255, 255));*/
+			vector4d(255, 255, 255, 255));
 	}
 }
 
 int FindLineCircleIntersections(
-	float cx, float cy, float radius,
+	double cx, double cy, double radius,
 	Vector2D point1, Vector2D point2,
 	Vector2D *intersection1, Vector2D *intersection2)
 {
-	float dx, dy, A, B, C, det, t;
+	double dx, dy, A, B, C, det, t;
 
 	dx = point2.x - point1.x;
 	dy = point2.y - point1.y;
@@ -161,10 +161,11 @@ int FindLineCircleIntersections(
 		radius * radius;
 
 	det = B * B - 4 * A * C;
-	if ((A <= 0.0000001) || (det < 0))
+	if ((A <= 0) || (det < 0))
 	{
 		// No real solutions.
 		slog("no solution");
+		//slog("%lf %lf", A, det);
 		return 0;
 	}
 	else if (det == 0)
@@ -268,7 +269,7 @@ void check_box_collisions(int layer1, int layer2)
 	}
 }
 
-void connect_to_walls(RaycastHit *hit, Entity *self, float fwdMag, Vector2D forward, PriorityQueueList *pts, float initialAngle, float endAngle)
+void connect_to_walls(RaycastHit *hit, Entity *self, float fwdMag, Vector2D forward, PriorityQueueList *pts, float initialAngle, float endAngle, Vector2D eyePos)
 {
 	Vector2D hitdiff, dir, intersection1, intersection2;
 	float tmpAngle;
@@ -276,23 +277,29 @@ void connect_to_walls(RaycastHit *hit, Entity *self, float fwdMag, Vector2D forw
 	{
 		if ((hit->hitpoint.x > hit->other->corners[3].x) && (hit->hitpoint.x < hit->other->corners[0].x))
 		{
-			if (self->position.x >= hit->hitpoint.x)
+			if (eyePos.x >= hit->hitpoint.x)
 			{
-				FindLineCircleIntersections(
-					self->position.x, self->position.y, fwdMag,
-					hit->hitpoint, vector2d(hit->hitpoint.x - 200, hit->hitpoint.y),
-					&intersection1, &intersection2);
+				if (FindLineCircleIntersections(
+					eyePos.x, eyePos.y, fwdMag,
+					hit->hitpoint, vector2d(hit->hitpoint.x - fwdMag * 2, hit->hitpoint.y),
+					&intersection1, &intersection2) == 0)
+				{
+					return;
+				}
 			}
 			else
 			{
-				FindLineCircleIntersections(
-					self->position.x, self->position.y, fwdMag,
-					hit->hitpoint, vector2d(hit->hitpoint.x + 200, hit->hitpoint.y),
-					&intersection1, &intersection2);
+				if (FindLineCircleIntersections(
+					eyePos.x, eyePos.y, fwdMag,
+					hit->hitpoint, vector2d(hit->hitpoint.x + fwdMag * 2, hit->hitpoint.y),
+					&intersection1, &intersection2) == 0)
+				{
+					return;
+				}
 			}
-			hit = raycast_through_all_entities(self->position, intersection1, 1); if (!hit)
+			hit = raycast_through_all_entities(eyePos, intersection1, 1); if (!hit)
 				return;
-			vector2d_sub(dir, intersection1, self->position);
+			vector2d_sub(dir, intersection1, eyePos);
 			tmpAngle = vector2d_angle(dir);
 			if (tmpAngle < 0)
 				tmpAngle += 360;
@@ -303,7 +310,7 @@ void connect_to_walls(RaycastHit *hit, Entity *self, float fwdMag, Vector2D forw
 					&& ((hit->hitpoint.y - intersection1.y < 0.0005) && (hit->hitpoint.y - intersection1.y > -0.0005))))
 			{
 				hit->hitpoint = intersection1;
-				vector2d_sub(hitdiff, intersection1, self->position);
+				vector2d_sub(hitdiff, intersection1, eyePos);
 				pqlist_insert(pts, hit, acos(vector2d_dot_product(hitdiff, forward) / (vector2d_magnitude(hitdiff)*fwdMag)));
 			}
 			else
@@ -313,23 +320,26 @@ void connect_to_walls(RaycastHit *hit, Entity *self, float fwdMag, Vector2D forw
 		}
 		else
 		{
-			if (self->position.y >= hit->hitpoint.y)
+			if (eyePos.y >= hit->hitpoint.y)
 			{
-				FindLineCircleIntersections(
-					self->position.x, self->position.y, fwdMag,
-					hit->hitpoint, vector2d(hit->hitpoint.x, hit->hitpoint.y - 200),
-					&intersection1, &intersection2);
+				if (FindLineCircleIntersections(
+					eyePos.x, eyePos.y, fwdMag,
+					hit->hitpoint, vector2d(hit->hitpoint.x, hit->hitpoint.y - fwdMag * 2),
+					&intersection1, &intersection2) == 0)
+					return;
 			}
 			else
 			{
-				FindLineCircleIntersections(
-					self->position.x, self->position.y, fwdMag,
-					hit->hitpoint, vector2d(hit->hitpoint.x, hit->hitpoint.y + 200),
-					&intersection1, &intersection2);
+				if (FindLineCircleIntersections(
+					eyePos.x, eyePos.y, fwdMag,
+					hit->hitpoint, vector2d(hit->hitpoint.x, hit->hitpoint.y + fwdMag * 2),
+					&intersection1, &intersection2) == 0)
+					return;
 			}
-			hit = raycast_through_all_entities(self->position, intersection1, 1); if (!hit)
+
+			hit = raycast_through_all_entities(eyePos, intersection1, 1); if (!hit)
 				return;
-			vector2d_sub(dir, intersection1, self->position);
+			vector2d_sub(dir, intersection1, eyePos);
 			tmpAngle = vector2d_angle(dir);
 			if (tmpAngle < 0)
 				tmpAngle += 360;
@@ -340,7 +350,7 @@ void connect_to_walls(RaycastHit *hit, Entity *self, float fwdMag, Vector2D forw
 					&& ((hit->hitpoint.y - intersection1.y < 0.0005) && (hit->hitpoint.y - intersection1.y > -0.0005))))
 			{
 				hit->hitpoint = intersection1;
-				vector2d_sub(hitdiff, intersection1, self->position);
+				vector2d_sub(hitdiff, intersection1, eyePos);
 				pqlist_insert(pts, hit, acos(vector2d_dot_product(hitdiff, forward) / (vector2d_magnitude(hitdiff)*fwdMag)));
 			}
 			else
@@ -389,14 +399,14 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward, V
 	vector2d_sub(hitdiff, hit->hitpoint, eyePos);
 	initialHitpoint = hit->hitpoint;
 	pqlist_insert(pts, hit, acos(vector2d_dot_product(hitdiff, forward) / (vector2d_magnitude(hitdiff)*fwdMag)));
-	connect_to_walls(hit, self, fwdMag, forward, pts, initialAngle, endAngle);
+	connect_to_walls(hit, self, fwdMag, forward, pts, initialAngle, endAngle, eyePos);
 	vector2d_add(end, eyePos, rotated);
 	hit = raycast_through_all_entities(eyePos, end, layer);
 	if (!hit) return;
 	vector2d_sub(hitdiff, hit->hitpoint, eyePos);
 	endHitpoint = hit->hitpoint;
 	pqlist_insert(pts, hit, acos(vector2d_dot_product(hitdiff, forward) / (vector2d_magnitude(hitdiff)*fwdMag)));
-	connect_to_walls(hit, self, fwdMag, forward, pts, initialAngle, endAngle);
+	connect_to_walls(hit, self, fwdMag, forward, pts, initialAngle, endAngle, eyePos);
 	for (tmpAngle = 0; tmpAngle < fov * (GF2D_PI / 180); tmpAngle += (precision * GF2D_PI / 180))
 	{
 		dir = vector2d_rotate(forward, tmpAngle);
@@ -406,7 +416,7 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward, V
 			continue;
 		vector2d_sub(hitdiff, hit->hitpoint, eyePos);
 		pqlist_insert(pts, hit, tmpAngle);
-		connect_to_walls(hit, self, fwdMag, forward, pts, initialAngle, endAngle);
+		connect_to_walls(hit, self, fwdMag, forward, pts, initialAngle, endAngle, eyePos);
 	}
 	for (i = 0; i < entity_manager.max_entities; i++)
 	{
@@ -432,8 +442,9 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward, V
 			if (!hit)
 				continue;
 			vector2d_sub(hitdiff, hit->hitpoint, eyePos);
+			//gf2d_draw_line(eyePos, hit->hitpoint, vector4d(255, 255, 255, 255));
 			pqlist_insert(pts, hit, acos(vector2d_dot_product(hitdiff, forward) / (vector2d_magnitude(hitdiff)*fwdMag)));
-			connect_to_walls(hit, self, fwdMag, forward, pts, initialAngle, endAngle);
+			connect_to_walls(hit, self, fwdMag, forward, pts, initialAngle, endAngle, eyePos);
 			if ((hit->hitpoint.x == entity_manager.ent_list[i].coll->corners[j].x)
 				&& (hit->hitpoint.y == entity_manager.ent_list[i].coll->corners[j].y))
 			{
@@ -444,14 +455,14 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward, V
 				if (!hit) continue;
 				vector2d_sub(hitdiff, hit->hitpoint, eyePos);
 				pqlist_insert(pts, hit, acos(vector2d_dot_product(hitdiff, forward) / (vector2d_magnitude(hitdiff)*fwdMag)));
-				connect_to_walls(hit, self, fwdMag, forward, pts, initialAngle, endAngle);
+				connect_to_walls(hit, self, fwdMag, forward, pts, initialAngle, endAngle, eyePos);
 				dir = vector2d_rotate(dir, -0.02);
 				vector2d_add(end, dir, eyePos);
 				hit = raycast_through_all_entities(eyePos, end, layer);
 				if (!hit) continue;
 				vector2d_sub(hitdiff, hit->hitpoint, eyePos);
 				pqlist_insert(pts, hit, acos(vector2d_dot_product(hitdiff, forward) / (vector2d_magnitude(hitdiff)*fwdMag)));
-				connect_to_walls(hit, self, fwdMag, forward, pts, initialAngle, endAngle);
+				connect_to_walls(hit, self, fwdMag, forward, pts, initialAngle, endAngle, eyePos);
 			}
 		}
 	}

@@ -38,6 +38,7 @@ typedef struct Entity_s
 	int numPatrol;
 	Vector2D patrol[4];
 	Vector2D hunt[4];
+	double huntRadius;
 	Vector2D retreat;
 
 	BoxCollider *coll;

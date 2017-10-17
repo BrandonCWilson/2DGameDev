@@ -41,6 +41,8 @@ void move_along_path(PF_PathArray *patharray, Entity *self, Vector2D start, Tile
 	Vector2D goal, diff;
 	int i;
 	double remainingDist = self->moveSpeed;
+	if (!self || !patharray || !map)
+		return;
 	if (patharray->count >= 1)
 	{
 		// only do this until you're out of path
@@ -51,7 +53,9 @@ void move_along_path(PF_PathArray *patharray, Entity *self, Vector2D start, Tile
 				if (patharray->count == 1)
 				{
 					self->currentDestination += 1;
-					if (self->currentDestination > self->numPatrol)
+					if ((self->currentDestination > self->numPatrol) && (self->alert == 0))
+						self->currentDestination = 0;
+					else if ((self->alert == 1) && (self->currentDestination > 3))
 						self->currentDestination = 0;
 				}
 				continue;
@@ -77,7 +81,9 @@ void move_along_path(PF_PathArray *patharray, Entity *self, Vector2D start, Tile
 				{
 					// end of path..
 					self->currentDestination += 1;
-					if (self->currentDestination > self->numPatrol)
+					if ((self->currentDestination > self->numPatrol) && (self->alert == 0))
+						self->currentDestination = 0;
+					else if ((self->alert == 1) && (self->currentDestination > 3))
 						self->currentDestination = 0;
 				}
 			}
@@ -91,8 +97,36 @@ void move_along_path(PF_PathArray *patharray, Entity *self, Vector2D start, Tile
 		}
 	}
 }
+void enemy_set_hunting_points(Entity *self, Vector2D base, double rad, TileMap *map)
+{
+	RaycastHit *hit;
+	int i;
+	if (!self)
+		return;
+	slog("i wanna hunt");
+	for (i = 0; i < 4; i++)
+	{
+		hit = raycast_through_all_entities(base, vector2d(base.x + rad * (i < 2 ? -1 : 1),base.y + rad * (i % 3 == 0 ? 1: -1)), 1);
+		if (!hit)
+		{
+			slog("%i could not be raycasted");
+			return;
+		}
+		if (hit->other != NULL)
+		{
+			// handle cases with the side of a wall
+			if (hit->hitpoint.x == hit->other->corners[3].x)
+				hit->hitpoint.x -= 0.0001;
+			else
+				hit->hitpoint.x += 0.0001;
+		}
+		self->hunt[i] = vector2d((int)((hit->hitpoint.x - map->position.x) / map->tileset->frame_w), (int)((hit->hitpoint.y - map->position.y) / map->tileset->frame_h));
+		
+		raycasthit_free(hit);
+	}
+}
 
-void enemy_set_alert(Entity *self, Vector2D eyePos, Vector2D forward)
+void enemy_set_alert(Entity *self, Vector2D eyePos, Vector2D forward, double huntingRad, TileMap *map)
 {
 	Entity *seen = NULL;
 	seen = entity_closest_in_sight_by_layer(self, 2, eyePos, forward);
@@ -112,6 +146,10 @@ void enemy_set_alert(Entity *self, Vector2D eyePos, Vector2D forward)
 	seen = entity_closest_in_sight_by_layer(self, 6, eyePos, forward);
 	if (seen != NULL)
 	{
+		if (self->alert != 1)
+		{
+			enemy_set_hunting_points(self, seen->position, huntingRad, map);
+		}
 		// if we find a corpse...
 		self->alert = 1;
 		return;
@@ -136,12 +174,10 @@ void archer_update(Entity *self)
 	map = get_current_tilemap();
 	direction = self->forward;
 	direction = vector2d_rotate(direction, self->fov * GF2D_PI / -360);
-	if (self->alert == 0)
+	if (self->alert != 1)
 	{
-		enemy_set_alert(self, eyePos, direction);
+		enemy_set_alert(self, eyePos, direction, self->huntRadius, map);
 	}
-
-	enemy_set_alert(self, eyePos, direction);
 	if (self->alert != 0)
 	{
 		color = vector4d(0, 0, 70, 255);
@@ -162,7 +198,7 @@ void archer_update(Entity *self)
 	}
 	else if (self->alert == 1)
 	{
-		path = pathfinding_get_path(get_current_graph(), start, self->patrol[self->currentDestination]);
+		path = pathfinding_get_path(get_current_graph(), start, self->hunt[self->currentDestination]);
 	}
 	else if (self->alert == 2)
 	{
