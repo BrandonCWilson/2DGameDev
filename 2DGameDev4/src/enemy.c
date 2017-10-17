@@ -52,11 +52,16 @@ bool move_along_path(PF_PathArray *patharray, Entity *self, Vector2D start, Tile
 			{
 				if (patharray->count == 1)
 				{
+					slog("new destination");
 					self->currentDestination += 1;
 					if ((self->currentDestination > self->numPatrol) && (self->alert == 0))
 						self->currentDestination = 0;
 					else if ((self->alert == 1) && (self->currentDestination > 3))
+					{
+						self->huntLoops += 1;
 						self->currentDestination = 0;
+						slog("increase huntLoops: %i", self->huntLoops);
+					}
 					return true;
 				}
 				continue;
@@ -80,12 +85,17 @@ bool move_along_path(PF_PathArray *patharray, Entity *self, Vector2D start, Tile
 				self->lastPosition = patharray->path[i];
 				if (i == 0)
 				{
+					slog("new destination");
 					// end of path..
 					self->currentDestination += 1;
 					if ((self->currentDestination > self->numPatrol) && (self->alert == 0))
 						self->currentDestination = 0;
 					else if ((self->alert == 1) && (self->currentDestination > 3))
+					{
 						self->currentDestination = 0;
+						self->huntLoops += 1;
+						slog("increase huntLoops: %i", self->huntLoops);
+					}
 					return true;
 				}
 			}
@@ -107,6 +117,10 @@ void enemy_set_hunting_points(Entity *self, Vector2D base, double rad, TileMap *
 	if (!self)
 		return;
 	slog("i wanna hunt");
+	
+	self->hunt[4] = vector2d((int)((base.x - map->position.x) / map->tileset->frame_w), (int)((base.y - map->position.y) / map->tileset->frame_h));
+	self->currentDestination = 4;
+	self->huntLoops = 0;
 	for (i = 0; i < 4; i++)
 	{
 		hit = raycast_through_all_entities(base, vector2d(base.x + rad * (i < 2 ? -1 : 1),base.y + rad * (i % 3 == 0 ? 1: -1)), 1);
@@ -120,11 +134,16 @@ void enemy_set_hunting_points(Entity *self, Vector2D base, double rad, TileMap *
 			// handle cases with the side of a wall
 			if (hit->hitpoint.x == hit->other->corners[3].x)
 				hit->hitpoint.x -= 0.0001;
-			else
+			else if (hit->hitpoint.x == hit->other->corners[0].x)
 				hit->hitpoint.x += 0.0001;
+			if (hit->hitpoint.y == hit->other->corners[2].y)
+				hit->hitpoint.y -= 0.0001;
+			else if (hit->hitpoint.y == hit->other->corners[0].y)
+				hit->hitpoint.y += 0.0001;
+			slog("hitpoint %i: %f %f", i, hit->hitpoint.x, hit->hitpoint.y);
 		}
 		self->hunt[i] = vector2d((int)((hit->hitpoint.x - map->position.x) / map->tileset->frame_w), (int)((hit->hitpoint.y - map->position.y) / map->tileset->frame_h));
-		
+		slog("hunt: %f %f", self->hunt[i].x, self->hunt[i].y);
 		raycasthit_free(hit);
 	}
 }
@@ -134,7 +153,9 @@ void enemy_set_alert(Entity *self, Vector2D eyePos, Vector2D forward, double hun
 	Vector2D playerEye;
 	Vector2D playerDirection;
 	Entity *seen = NULL;
+	Entity *seenAlt = NULL;
 	Entity *playerSeen = NULL;
+	Vector2D diff, diff2;
 	seen = entity_closest_in_sight_by_layer(self, 2, eyePos, forward);
 	if (seen != NULL)
 	{
@@ -169,8 +190,19 @@ void enemy_set_alert(Entity *self, Vector2D eyePos, Vector2D forward, double hun
 		return;
 	}
 	seen = entity_closest_in_sight_by_layer(self, 5, eyePos, forward);
-	if (seen != NULL)
+	seenAlt = entity_closest_in_sight_by_layer(self, 7, eyePos, forward);
+	if ((seen != NULL)||(seenAlt != NULL))
 	{
+		// funnel seenAlt into seen if it's relevant, do calculations with whatever's in seen by the end of it
+		if (!seen)
+			seen = seenAlt;
+		else if (seenAlt != NULL)
+		{
+			vector2d_sub(diff, seen->position, eyePos);
+			vector2d_sub(diff2, seenAlt->position, eyePos);
+			if (vector2d_magnitude_squared(diff2) < vector2d_magnitude_squared(diff))
+				seen = seenAlt;
+		}
 		if (self->alert != 1)
 		{
 			enemy_set_hunting_points(self, seen->position, huntingRad, map);
@@ -178,6 +210,23 @@ void enemy_set_alert(Entity *self, Vector2D eyePos, Vector2D forward, double hun
 		// if we find a corpse...
 		self->alert = 1;
 		return;
+	}
+	if (self->alert == 1)
+	{
+		if (self->huntLoops > 2)
+			self->alert = 0;
+	}
+}
+void tilemap_draw_path(Vector2D *path, int length, TileMap *tilemap, Vector2D position)
+{
+	int i;
+	if (!path)return;
+	for (i = 0; i < length - 1; i++)
+	{
+		gf2d_draw_line(
+			vector2d(position.x + (path[i].x * tilemap->tileset->frame_w) + tilemap->tileset->frame_w / 2, position.y + (path[i].y * tilemap->tileset->frame_h + tilemap->tileset->frame_h / 2)),
+			vector2d(position.x + (path[i + 1].x * tilemap->tileset->frame_w) + tilemap->tileset->frame_w / 2, position.y + (path[i + 1].y * tilemap->tileset->frame_h) + tilemap->tileset->frame_h / 2),
+			vector4d(255, 0, 0, 255));
 	}
 }
 
@@ -207,7 +256,7 @@ void archer_update(Entity *self)
 	{
 		color = vector4d(255, 0, 70, 0);
 	}
-	
+	gf2d_draw_circle(vector2d(563.593600, 248.000100), 10, vector4d(255, 255, 255, 255));
 	vector2d_set_magnitude(&direction, self->maxSight);
 	draw_line_of_sight(self, 1, self->fov, direction, color, 20, eyePos);
 	//self->forward = vector2d_rotate(self->forward, 0.01);
@@ -243,13 +292,21 @@ void archer_update(Entity *self)
 	}
 	if (!path)
 	{
-		//slog("no path to move along");
+		if (self->alert != 3)
+		{
+			slog("no path to move along: %f %f", self->hunt[self->currentDestination].x, self->hunt[self->currentDestination].y);
+		}
 		self->currentDestination += 1;
 		if (self->currentDestination > self->numPatrol)
+		{
+			if (self->alert == 1)
+				self->huntLoops += 1;
 			self->currentDestination = 0;
+		}
 		return;
 	}
 	patharray = convert_path_to_vector2d_array(path);
+	tilemap_draw_path(patharray->path, patharray->count, map, map->position);
 	if (self->alert == 2)
 	{
 		if (move_along_path(patharray, self, start, map, direction) == true)
@@ -335,4 +392,27 @@ void stone_touch(Entity *self, Entity *other)
 		return;
 	if (other->layer == 1)
 		self->position = self->lastPosition;
+}
+
+void corpse_free(Entity *self)
+{
+	entity_free(self);
+}
+
+void corpse_die(Entity *self)
+{
+	Entity *bones;
+	if (!self)
+		return;
+	if (self->corpse != NULL)
+	{
+		if (self->corpse->sprite != NULL)
+		{
+			self->sprite = self->corpse->sprite;
+			self->spriteOffset = self->corpse->spriteOffset;
+			self->scale = self->corpse->scale;
+			self->frame = 0;
+		}
+		self->layer = self->corpse->layer;
+	}
 }

@@ -77,6 +77,10 @@ bool entity_can_i_see_you(Entity *self, Entity *other, Vector2D eyePos, Vector2D
 	float initialAngle, endAngle;
 	Vector2D dir, end, rotated, longestColl;
 	RaycastHit *hit;
+	if (!self || !other)
+		return false;
+	if (!other->coll)
+		return false;
 	dir = direction;
 	rotated = vector2d_rotate(dir, self->fov * GF2D_PI / 180);
 	initialAngle = vector2d_angle(dir); endAngle = vector2d_angle(rotated);
@@ -142,6 +146,8 @@ Entity *entity_closest_in_sight_by_layer(Entity *self, int layer, Vector2D eyePo
 		if (entity_manager.ent_list[i].layer != layer)
 			continue;
 		if (&entity_manager.ent_list[i] == self)
+			continue;
+		if (&entity_manager.ent_list[i].coll == NULL)
 			continue;
 		if (entity_can_i_see_you(self, &entity_manager.ent_list[i], eyePos, direction) == 1)
 		{

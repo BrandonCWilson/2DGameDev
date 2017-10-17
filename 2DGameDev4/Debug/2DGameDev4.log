@@ -1,9 +1,14 @@
-﻿  player.c
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\player.c(66): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\player.c(67): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\player.c(90): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\player.c(102): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\player.c(125): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\player.c(79): warning C4101: 'projectile': unreferenced local variable
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\player.c(84): warning C4101: 'dist': unreferenced local variable
+﻿  enemy.c
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\enemy.c(32): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\enemy.c(34): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\enemy.c(9): warning C4101: 'dir': unreferenced local variable
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\enemy.c(9): warning C4101: 'end': unreferenced local variable
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\enemy.c(105): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\enemy.c(166): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\enemy.c(249): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\enemy.c(260): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\enemy.c(237): warning C4101: 'goal': unreferenced local variable
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\enemy.c(245): warning C4101: 'i': unreferenced local variable
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\enemy.c(237): warning C4101: 'diff': unreferenced local variable
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\enemy.c(404): warning C4101: 'bones': unreferenced local variable
   2DGameDev4.vcxproj -> C:\Users\Brando\Documents\Visual Studio 2015\Projects\2DGameDev4\Debug\2DGameDev4.exe

@@ -19,4 +19,6 @@ void archer_turn_to_stone(Entity *self);
 
 void stone_touch(Entity *self, Entity *other);
 
+void corpse_die(Entity *self);
+
 #endif

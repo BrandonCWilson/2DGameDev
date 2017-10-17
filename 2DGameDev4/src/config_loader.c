@@ -25,6 +25,7 @@ FunctionParser funct[] =
 	,{ arrow_die, "arrow_die" }
 	,{ archer_turn_to_stone, "archer_turn_to_stone" }
 	,{ stone_touch, "stone_touch" }
+	,{ corpse_die, "corpse_die" }
 };
 
 int level_MAX_WIDTH = 0;
@@ -81,7 +82,7 @@ int config_loader_entities_init_count_incoming(char *filename)
 		slog("Unable to access the prefab file ents");
 		return;
 	}
-	while (fscanf(f, "%s %s", param, input) != EOF)
+	while (fscanf(f, "%s", param) != EOF)
 	{
 		if (strcmp(param, "ent:") == 0)
 			rtn += 1;
@@ -104,7 +105,7 @@ void config_loader_entities_init(char *filename)
 	int i = 0;
 	int j;
 	// count the incoming prefabs and make some space
-	numEnts = config_loader_entities_init_count_incoming(filename) + 1;
+	numEnts = config_loader_entities_init_count_incoming(filename);
 	
 	prefab_manager.prefab_list = (Entity *)malloc(sizeof(Entity)*numEnts);
 	memset(prefab_manager.prefab_list, 0, sizeof(Entity)*numEnts);
@@ -121,7 +122,7 @@ void config_loader_entities_init(char *filename)
 		if (strcmp(buffer, "ent:") == 0)
 		{
 			fscanf(file, "%s", prefab_manager.prefab_list[i].name);
-			slog("new prefab: %s", prefab_manager.prefab_list[i].name);
+			slog("new prefab %i: %s",i, prefab_manager.prefab_list[i].name);
 			strcpy(buffer, prefab_manager.prefab_list[i].name);
 			while (strcmp(buffer, "END") != 0)
 			{

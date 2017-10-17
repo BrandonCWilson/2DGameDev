@@ -17,16 +17,21 @@ typedef struct Entity_s
 	int health;
 	int damage;
 
+	int killCount;
+	bool releasedX;
+
 	int timer;
 	Vector2D position;
 	Vector2D velocity;
 	Vector2D lastPosition;
+
 	Vector2D scale;
 	Vector2D spriteOffset;
 
 	double moveSpeed;
 	double turnSpeed;
 	Vector2D forward;
+	Vector2D lastForward;
 	Vector2D eyePos;
 	double fov;
 	double maxSight;
@@ -54,8 +59,9 @@ typedef struct Entity_s
 	bool seeThePlayer;
 	Vector2D lastKnownPosition;
 
-	Vector2D hunt[4];
+	Vector2D hunt[5];
 	double huntRadius;
+	int huntLoops;
 
 	Vector2D retreat;
 	bool wasRetreating;
