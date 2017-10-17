@@ -35,6 +35,7 @@ typedef struct PF_Path_S
 	PF_Path *parent;
 	PF_Node *current;
 	PF_Edge *edgeTaken;
+	int weight;
 } PF_Path;
 
 typedef struct PF_PathArray_S

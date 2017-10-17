@@ -36,6 +36,44 @@ bool enemy_turn_toward_vector(Entity *self, Vector2D goal)
 	}
 }
 
+void enemy_set_path(Entity *self)
+{
+	PF_Path *path = NULL;
+	PF_PathArray *patharray = NULL;
+	Vector2D start;
+	TileMap *map;
+	map = get_current_tilemap();
+	vector2d_sub(start, self->position, map->position);
+	start = vector2d((int)(start.x / map->tileset->frame_w), (int)(start.y / map->tileset->frame_h));
+	if (self->alert == 0)
+	{
+		path = pathfinding_get_path(get_current_graph(), start, self->patrol[self->currentDestination]);
+	}
+	else if (self->alert == 1)
+	{
+		path = pathfinding_get_path(get_current_graph(), start, self->hunt[self->currentDestination]);
+	}
+	else if (self->alert == 2)
+	{
+		path = pathfinding_get_path(get_current_graph(), start, self->retreat);
+	}
+	if (path != NULL)
+	{
+		patharray = convert_path_to_vector2d_array(path);
+		path_free_all_parents(path);
+		if (patharray != NULL)
+		{
+			if (self->patharray != NULL)
+			{
+				patharray_free(self->patharray);
+			}
+			self->patharray = patharray;
+			self->pathlocation = patharray->count - 1;
+		}
+	}
+}
+
+
 bool move_along_path(PF_PathArray *patharray, Entity *self, Vector2D start, TileMap *map, Vector2D forward)
 {
 	Vector2D goal, diff;
@@ -46,7 +84,7 @@ bool move_along_path(PF_PathArray *patharray, Entity *self, Vector2D start, Tile
 	if (patharray->count >= 1)
 	{
 		// only do this until you're out of path
-		for (i = patharray->count - 1; i >= 0; i--)
+		for (i = self->pathlocation; i >= 0; i--)
 		{
 			if ((patharray->path[i].x == self->lastPosition.x) && (patharray->path[i].y == self->lastPosition.y))
 			{
@@ -60,6 +98,7 @@ bool move_along_path(PF_PathArray *patharray, Entity *self, Vector2D start, Tile
 						self->huntLoops += 1;
 						self->currentDestination = 0;
 					}
+					enemy_set_path(self);
 					return true;
 				}
 				continue;
@@ -67,9 +106,6 @@ bool move_along_path(PF_PathArray *patharray, Entity *self, Vector2D start, Tile
 			goal = vector2d(map->position.x + (patharray->path[i].x * map->tileset->frame_w), map->position.y + (patharray->path[i].y * map->tileset->frame_h));
 			if (goal.x == self->position.x && goal.y == self->position.y)
 				slog("moving to current position");
-			// move toward goal
-			if (i < patharray->count - 2)
-				break;
 			vector2d_sub(diff, goal, self->position);
 			// turn toward the point, and stand still if we have to turn again
 			if (enemy_turn_toward_vector(self, diff) == false)
@@ -81,6 +117,7 @@ bool move_along_path(PF_PathArray *patharray, Entity *self, Vector2D start, Tile
 				remainingDist -= vector2d_magnitude(diff);
 				self->position = goal;
 				self->lastPosition = patharray->path[i];
+				self->pathlocation = i;
 				if (i == 0)
 				{
 					// end of path..
@@ -92,6 +129,7 @@ bool move_along_path(PF_PathArray *patharray, Entity *self, Vector2D start, Tile
 						self->currentDestination = 0;
 						self->huntLoops += 1;
 					}
+					enemy_set_path(self);
 					return true;
 				}
 			}
@@ -141,6 +179,7 @@ void enemy_set_hunting_points(Entity *self, Vector2D base, double rad, TileMap *
 	}
 }
 
+
 void enemy_set_alert(Entity *self, Vector2D eyePos, Vector2D forward, double huntingRad, TileMap *map)
 {
 	Vector2D playerEye;
@@ -171,6 +210,7 @@ void enemy_set_alert(Entity *self, Vector2D eyePos, Vector2D forward, double hun
 	{
 		self->alert = 1;
 		enemy_set_hunting_points(self, self->lastKnownPosition, self->huntRadius, map);
+		enemy_set_path(self);
 		self->seeThePlayer = false;
 		return;
 	}
@@ -180,6 +220,7 @@ void enemy_set_alert(Entity *self, Vector2D eyePos, Vector2D forward, double hun
 		// if we find a stone...
 		self->alert = 2;
 		self->wasRetreating = true;
+		enemy_set_path(self);
 		return;
 	}
 	seen = entity_closest_in_sight_by_layer(self, 5, eyePos, forward);
@@ -199,6 +240,7 @@ void enemy_set_alert(Entity *self, Vector2D eyePos, Vector2D forward, double hun
 		if (self->alert != 1)
 		{
 			enemy_set_hunting_points(self, seen->position, huntingRad, map);
+			enemy_set_path(self);
 		}
 		// if we find a corpse...
 		self->alert = 1;
@@ -224,6 +266,8 @@ void archer_update(Entity *self)
 	vector2d_add(eyePos, self->position, self->eyePos);
 	double remainingDist = self->moveSpeed;
 	int i;
+	if (self->timer == 0)
+		enemy_set_path(self);
 	self->timer += 1;
 	map = get_current_tilemap();
 	direction = self->forward;
@@ -242,19 +286,7 @@ void archer_update(Entity *self)
 	//self->forward = vector2d_rotate(self->forward, 0.01);
 	vector2d_sub(start, self->position, map->position);
 	start = vector2d((int)(start.x / map->tileset->frame_w), (int)(start.y / map->tileset->frame_h));
-	if (self->alert == 0)
-	{
-		path = pathfinding_get_path(get_current_graph(), start, self->patrol[self->currentDestination]);
-	}
-	else if (self->alert == 1)
-	{
-		path = pathfinding_get_path(get_current_graph(), start, self->hunt[self->currentDestination]);
-	}
-	else if (self->alert == 2)
-	{
-		path = pathfinding_get_path(get_current_graph(), start, self->retreat);
-	}
-	else
+	if (self->alert == 3)
 	{
 		if ((self->projectile != NULL)&&(self->timer - self->lastShot > self->reload))
 		{
@@ -270,25 +302,11 @@ void archer_update(Entity *self)
 			}
 		}
 	}
-	if (!path)
-	{
-		if (self->alert != 3)
-		{
-			slog("no path to move along: %f %f", self->hunt[self->currentDestination].x, self->hunt[self->currentDestination].y);
-		}
-		self->currentDestination += 1;
-		if (self->currentDestination > self->numPatrol)
-		{
-			if (self->alert == 1)
-				self->huntLoops += 1;
-			self->currentDestination = 0;
-		}
+	if (self->patharray == NULL)
 		return;
-	}
-	patharray = convert_path_to_vector2d_array(path);
 	if (self->alert == 2)
 	{
-		if (move_along_path(patharray, self, start, map, direction) == true)
+		if (move_along_path(self->patharray, self, start, map, direction) == true)
 		{
 			if (self->wasRetreating == true)
 			{
@@ -300,10 +318,10 @@ void archer_update(Entity *self)
 	}
 	else
 	{
-		move_along_path(patharray, self, start, map, direction);
+		slog("start movement");
+		move_along_path(self->patharray, self, start, map, direction);
+		slog("end movement");
 	}
-	path_free_all_parents(path);
-	patharray_free(patharray);
 }
 
 void archer_init(Entity *self)

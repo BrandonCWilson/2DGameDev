@@ -4,6 +4,7 @@
 #include "collision.h"
 #include "raycast.h"
 #include "audio.h"
+#include "pathfinding.h"
 
 #ifndef _ENTITY_H_
 #define _ENTITY_H_
@@ -55,6 +56,9 @@ typedef struct Entity_s
 	int currentDestination;
 	int numPatrol;
 	Vector2D patrol[4];
+	PF_PathArray *patharray;
+	int pathlocation;
+
 
 	bool seeThePlayer;
 	Vector2D lastKnownPosition;

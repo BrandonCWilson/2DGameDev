@@ -667,6 +667,8 @@ void entity_delete(Entity *ent)
 		sound_free(ent->ouch);
 	if (ent->coll != NULL)
 		box_collider_free(ent->coll);
+	if (ent->patharray != NULL)
+		patharray_free(ent->patharray);
 	memset(ent, 0, sizeof(Entity));	//clean up the data
 }
 

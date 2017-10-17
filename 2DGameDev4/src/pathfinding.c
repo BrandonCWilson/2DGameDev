@@ -358,7 +358,7 @@ PF_Path *pathfinding_get_path(PF_Graph *graph, Vector2D start, Vector2D end)
 			path->edgeTaken = curPath->current->connections[i];
 			path->current = pathfinding_get_other_from_edge(curPath->current,curPath->current->connections[i]);
 			path->parent = curPath;
-			priority = pathfinding_get_heuristic(path->current, endNode);
+			priority = pathfinding_get_heuristic(path->current, endNode) + curPath->weight + path->edgeTaken->weight;
 			if (priority < 0)
 			{
 				slog("Error getting the heuristic");
