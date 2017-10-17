@@ -208,6 +208,8 @@ TileMap *tilemap_load(char *filename, Vector2D position)
 				ent->init(ent);
 			else
 				slog("cannot find an init function: %s", buffer);
+			if (ent->take_damage != NULL)
+				tilemap->numEnemies += 1;
 			while (fscanf(file, "%s", buffer) != EOF)
 			{
 				if (buffer[0] == '#')

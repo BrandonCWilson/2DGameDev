@@ -184,7 +184,6 @@ void player_update(Entity *self)
 		if (SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_TRIGGERRIGHT) > 1000)
 		{
 			self->hasReleased = false;
-			slog("charge: %i", self->charge);
 			self->charge += 1;
 			if (self->charge > self->maxCharge)
 				self->charge = self->maxCharge;
@@ -193,7 +192,6 @@ void player_update(Entity *self)
 		{
 			if (!self->hasReleased)
 			{
-				slog("calling shoot function");
 				player_shoot(self);
 			}
 			self->hasReleased = true;

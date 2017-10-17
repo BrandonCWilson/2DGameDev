@@ -15,6 +15,7 @@ typedef struct
 	Sprite *tileset;
 	char *map;
 	Vector2D position;
+	int numEnemies;
 }TileMap;
 
 void draw_map(Map *m);

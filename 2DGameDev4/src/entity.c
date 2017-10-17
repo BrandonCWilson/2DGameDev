@@ -126,7 +126,6 @@ bool entity_can_i_see_you(Entity *self, Entity *other, Vector2D eyePos, Vector2D
 		raycasthit_free(hit);
 		return 0;
 	}
-	gf2d_draw_line(eyePos, hit->hitpoint, vector4d(255, 255, 255, 255));
 	if (hit->other->parent == other)
 		return 1;
 	raycasthit_free(hit);
