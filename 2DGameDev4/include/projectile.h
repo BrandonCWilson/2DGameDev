@@ -10,5 +10,7 @@ void arrow_update(Entity *self);
 void arrow_touch(Entity *self, Entity *other);
 
 void arrow_init(Entity *self);
+
+void arrow_die(Entity *self);
 #endif
 #pragma once

@@ -9,5 +9,9 @@ void player_update(Entity *self);
 
 void player_touch(Entity *self, Entity *other);
 
+void player_take_damage(Entity *self, int damage);
+
+void player_die(Entity *self);
+
 Entity *get_player();
 #endif

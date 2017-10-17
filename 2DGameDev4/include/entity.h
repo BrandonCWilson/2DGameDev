@@ -31,20 +31,43 @@ typedef struct Entity_s
 	double fov;
 	double maxSight;
 
+	struct Entity_s *parent;
+
 	struct Entity_s *projectile;
+	int reload;
+	int lastShot;
+	int charge;
+	int maxCharge;
+	double shotSpeed;
+	bool hasReleased;
+
+	struct Entity_s *holding;
+
+	struct Entity_s *corpse;
+	struct Entity_s *stone;
 
 	int alert;
 	int currentDestination;
 	int numPatrol;
 	Vector2D patrol[4];
+
+	bool seeThePlayer;
+	Vector2D lastKnownPosition;
+
 	Vector2D hunt[4];
 	double huntRadius;
+
 	Vector2D retreat;
+	bool wasRetreating;
+	Vector2D behindMe;
 
 	BoxCollider *coll;
 	void(*update)(struct Entity_s *self);
 	void(*touch)(struct Entity_s *self, struct Entity_s *other);
 	void(*init)(struct Entity_s *self);
+	void(*take_damage)(struct Entity_s *self, int damage);
+	void(*die)(struct Entity_s *self);
+	void(*turn_to_stone)(struct Entity_s *self);
 	
 	Sound *ouch;
 	int lastHit;
@@ -83,6 +106,8 @@ void entity_draw(Entity *ent);
 void entity_draw_all();
 
 void entity_system_close();
+
+void entity_copy_prefab(Entity *ent, Entity *prefab);
 #endif
 
 #pragma once

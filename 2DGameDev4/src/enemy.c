@@ -36,13 +36,13 @@ bool enemy_turn_toward_vector(Entity *self, Vector2D goal)
 	}
 }
 
-void move_along_path(PF_PathArray *patharray, Entity *self, Vector2D start, TileMap *map, Vector2D forward)
+bool move_along_path(PF_PathArray *patharray, Entity *self, Vector2D start, TileMap *map, Vector2D forward)
 {
 	Vector2D goal, diff;
 	int i;
 	double remainingDist = self->moveSpeed;
 	if (!self || !patharray || !map)
-		return;
+		return false;
 	if (patharray->count >= 1)
 	{
 		// only do this until you're out of path
@@ -57,6 +57,7 @@ void move_along_path(PF_PathArray *patharray, Entity *self, Vector2D start, Tile
 						self->currentDestination = 0;
 					else if ((self->alert == 1) && (self->currentDestination > 3))
 						self->currentDestination = 0;
+					return true;
 				}
 				continue;
 			}
@@ -85,6 +86,7 @@ void move_along_path(PF_PathArray *patharray, Entity *self, Vector2D start, Tile
 						self->currentDestination = 0;
 					else if ((self->alert == 1) && (self->currentDestination > 3))
 						self->currentDestination = 0;
+					return true;
 				}
 			}
 			// we aren't gonna make it
@@ -96,6 +98,7 @@ void move_along_path(PF_PathArray *patharray, Entity *self, Vector2D start, Tile
 			}
 		}
 	}
+	return false;
 }
 void enemy_set_hunting_points(Entity *self, Vector2D base, double rad, TileMap *map)
 {
@@ -128,22 +131,44 @@ void enemy_set_hunting_points(Entity *self, Vector2D base, double rad, TileMap *
 
 void enemy_set_alert(Entity *self, Vector2D eyePos, Vector2D forward, double huntingRad, TileMap *map)
 {
+	Vector2D playerEye;
+	Vector2D playerDirection;
 	Entity *seen = NULL;
+	Entity *playerSeen = NULL;
 	seen = entity_closest_in_sight_by_layer(self, 2, eyePos, forward);
 	if (seen != NULL)
 	{
-		// if we can see the player...
+		// if we can see a player...
+		if (self->alert != 3)
+			self->lastShot = self->timer;
+		vector2d_add(playerEye, seen->position, seen->eyePos);
+		playerDirection = vector2d_rotate(seen->forward, seen->fov * GF2D_PI / -360);
+		if (entity_can_i_see_you(seen, self, playerEye, playerDirection) == 1)
+		{
+			self->turn_to_stone(self);
+			return;
+		}
 		self->alert = 3;
+		self->seeThePlayer = true;
+		self->lastKnownPosition = seen->position;
 		return;
 	}
-	seen = entity_closest_in_sight_by_layer(self, 5, eyePos, forward);
+	else if (self->alert == 3)
+	{
+		self->alert = 1;
+		enemy_set_hunting_points(self, self->lastKnownPosition, self->huntRadius, map);
+		self->seeThePlayer = false;
+		return;
+	}
+	seen = entity_closest_in_sight_by_layer(self, 6, eyePos, forward);
 	if (seen != NULL)
 	{
 		// if we find a stone...
 		self->alert = 2;
+		self->wasRetreating = true;
 		return;
 	}
-	seen = entity_closest_in_sight_by_layer(self, 6, eyePos, forward);
+	seen = entity_closest_in_sight_by_layer(self, 5, eyePos, forward);
 	if (seen != NULL)
 	{
 		if (self->alert != 1)
@@ -154,8 +179,6 @@ void enemy_set_alert(Entity *self, Vector2D eyePos, Vector2D forward, double hun
 		self->alert = 1;
 		return;
 	}
-	self->alert = 0;
-	return;
 }
 
 void archer_update(Entity *self)
@@ -164,9 +187,10 @@ void archer_update(Entity *self)
 	TileMap *map;
 	Vector2D start, goal, diff;
 	Vector4D color;
-	PF_Path *path;
+	PF_Path *path = NULL;
 	PF_PathArray *patharray;
 	Vector2D eyePos;
+	Entity *projectile;
 	vector2d_add(eyePos, self->position, self->eyePos);
 	double remainingDist = self->moveSpeed;
 	int i;
@@ -174,10 +198,7 @@ void archer_update(Entity *self)
 	map = get_current_tilemap();
 	direction = self->forward;
 	direction = vector2d_rotate(direction, self->fov * GF2D_PI / -360);
-	if (self->alert != 1)
-	{
-		enemy_set_alert(self, eyePos, direction, self->huntRadius, map);
-	}
+	enemy_set_alert(self, eyePos, direction, self->huntRadius, map);
 	if (self->alert != 0)
 	{
 		color = vector4d(0, 0, 70, 255);
@@ -206,24 +227,53 @@ void archer_update(Entity *self)
 	}
 	else
 	{
-		path = pathfinding_get_path(get_current_graph(), start, self->patrol[self->currentDestination]);
+		if ((self->projectile != NULL)&&(self->timer - self->lastShot > self->reload))
+		{
+			projectile = entity_new();
+			if (projectile != NULL)
+			{
+				entity_copy_prefab(projectile, self->projectile);
+				projectile->position = eyePos;
+				projectile->parent = self;
+				vector2d_sub(projectile->velocity, self->lastKnownPosition, projectile->position);
+				vector2d_set_magnitude(&projectile->velocity, 10);
+				self->lastShot = self->timer;
+			}
+		}
 	}
 	if (!path)
 	{
-		slog("no path to move along");
+		//slog("no path to move along");
 		self->currentDestination += 1;
 		if (self->currentDestination > self->numPatrol)
 			self->currentDestination = 0;
 		return;
 	}
 	patharray = convert_path_to_vector2d_array(path);
-	move_along_path(patharray, self, start, map, direction);
+	if (self->alert == 2)
+	{
+		if (move_along_path(patharray, self, start, map, direction) == true)
+		{
+			if (self->wasRetreating == true)
+			{
+				self->behindMe = vector2d(self->forward.x * -1, self->forward.y * -1);
+				self->wasRetreating = false;
+			}
+			enemy_turn_toward_vector(self, self->behindMe);
+		}
+	}
+	else
+	{
+		move_along_path(patharray, self, start, map, direction);
+	}
 	path_free_all_parents(path);
 	patharray_free(patharray);
 }
 
 void archer_init(Entity *self)
 {
+	if (!self)
+		return;
 	if (self->coll != NULL)
 	{
 		self->eyePos = vector2d(
@@ -235,4 +285,54 @@ void archer_init(Entity *self)
 void archer_touch(Entity *self, Entity *other)
 {
 
+}
+
+void archer_take_damage(Entity *self, int damage)
+{
+	if (!self)
+		return;
+	self->health -= damage;
+	if (self->health <= 0)
+	{
+		self->die(self);
+	}
+}
+
+void archer_free(Entity *self)
+{
+	entity_free(self);
+}
+
+void archer_die(Entity *self)
+{
+	Entity *remains;
+	if (self->corpse != NULL)
+	{
+		slog("archer is dying. replacing with corpse");
+		remains = entity_new();
+		entity_copy_prefab(remains, self->corpse);
+		remains->position = self->position;
+	}
+	archer_free(self);
+}
+
+void archer_turn_to_stone(Entity *self)
+{
+	Entity *statue;
+	if (self->stone != NULL)
+	{
+		slog("archer is turning to stone. replacing with stone");
+		statue = entity_new();
+		entity_copy_prefab(statue, self->stone);
+		statue->position = self->position;
+	}
+	archer_free(self);
+}
+
+void stone_touch(Entity *self, Entity *other)
+{
+	if (!self || !other)
+		return;
+	if (other->layer == 1)
+		self->position = self->lastPosition;
 }

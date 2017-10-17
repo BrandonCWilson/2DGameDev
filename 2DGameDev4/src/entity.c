@@ -15,6 +15,60 @@ typedef struct
 
 static EntManager entity_manager;
 
+void entity_copy_prefab(Entity *ent, Entity *prefab)
+{
+	if (!ent || !prefab)
+		return NULL;
+	if (prefab->update != NULL)
+		ent->update = prefab->update;
+	if (prefab->sprite != NULL)
+	{
+		ent->sprite = prefab->sprite;
+		ent->colorShift = vector4d(255, 255, 255, 255);
+	}
+	ent->layer = prefab->layer;
+	if (prefab->touch != NULL)
+		ent->touch = prefab->touch;
+	if (prefab->coll != NULL)
+	{
+		ent->coll = box_collider_new();
+		ent->coll->width = prefab->coll->width;
+		ent->coll->height = prefab->coll->height;
+		ent->coll->parent = ent;
+	}
+	if (prefab->ouch != NULL)
+	{
+		ent->ouch = prefab->ouch;
+	}
+	if (prefab->init != NULL)
+		ent->init = prefab->init;
+	if (prefab->projectile != NULL)
+		ent->projectile = prefab->projectile;
+	if (prefab->corpse != NULL)
+		ent->corpse = prefab->corpse;
+	if (prefab->take_damage != NULL)
+		ent->take_damage = prefab->take_damage;
+	if (prefab->die != NULL)
+		ent->die = prefab->die;
+	ent->health = prefab->health;
+	ent->scale = prefab->scale;
+	ent->spriteOffset = prefab->spriteOffset;
+	ent->fov = prefab->fov;
+	ent->damage = prefab->damage;
+	ent->maxSight = prefab->maxSight;
+	ent->forward = vector2d(1, 0);
+	ent->moveSpeed = prefab->moveSpeed;
+	ent->turnSpeed = prefab->turnSpeed;
+	ent->huntRadius = prefab->huntRadius;
+	ent->reload = prefab->reload;
+	ent->maxCharge = prefab->maxCharge;
+	ent->shotSpeed = prefab->shotSpeed;
+	if (prefab->turn_to_stone != NULL)
+		ent->turn_to_stone = prefab->turn_to_stone;
+	if (prefab->stone != NULL)
+		ent->stone = prefab->stone;
+}
+
 bool entity_can_i_see_you(Entity *self, Entity *other, Vector2D eyePos, Vector2D direction)
 {
 	int i;
@@ -622,6 +676,10 @@ void entity_update_all()
 	int i;
 	entity_update_all_colliders();
 	check_box_collisions(2, 1);
+	check_box_collisions(4, 1);
+	check_box_collisions(4, 2);
+	check_box_collisions(4, 3);
+	check_box_collisions(6, 1);
 	for (i = 0; i < entity_manager.max_entities; i++)
 	{
 		if (entity_manager.ent_list[i].inUse)

@@ -47,17 +47,47 @@ void player_init(Entity *self)
 	}
 }
 
+void player_shoot(Entity *self)
+{
+	Entity *projectile;
+	if (self->timer - self->lastShot < self->reload)
+	{
+		return;
+	}
+	if (self->projectile != NULL)
+	{
+		projectile = entity_new();
+		if (projectile != NULL)
+		{
+			entity_copy_prefab(projectile, self->projectile);
+			projectile->position = self->position;
+			projectile->velocity = self->forward;
+			projectile->parent = self;
+			projectile->damage = projectile->damage * ((double)self->charge / self->maxCharge);
+			vector2d_set_magnitude(&projectile->velocity, self->shotSpeed * ((double)self->charge / self->maxCharge));
+			self->lastShot = self->timer;
+		}
+	}
+	else
+	{
+		slog("no projectile to spawn");
+	}
+}
+
 void player_update(Entity *self)
 {
 	Entity *projectile;
 	int mx, my;
 	Vector2D direction;
 	Vector2D eyePos;
+	Entity *nearestStone;
+	double dist;
+	Vector2D diff;
 
 	vector2d_add(eyePos, self->position, self->eyePos);
 
 	direction = self->forward;
-	direction = vector2d_rotate(direction, 90 * GF2D_PI / -360);
+	direction = vector2d_rotate(direction, self->fov * GF2D_PI / -360);
 	self->lastPosition = self->position;
 	if (!controller)
 	{
@@ -66,26 +96,67 @@ void player_update(Entity *self)
 	}
 	else
 	{
-		//self->velocity.x = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTX) / (double)10000;
-		//self->velocity.y = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTY) / (double)10000;
+		self->velocity.x = self->moveSpeed * SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTX) / (double)10000;
+		self->velocity.y = self->moveSpeed * SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTY) / (double)10000;
 		self->forward = vector2d(SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_RIGHTX), SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_RIGHTY));
-		vector2d_set_magnitude(&self->forward, 300);
+		vector2d_set_magnitude(&self->forward, self->maxSight);
 		if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_A))
 		{
-			if (self->projectile != NULL)
+			self->hasReleased = false;
+			slog("charge: %i", self->charge);
+			self->charge += 1;
+			if (self->charge > self->maxCharge)
+				self->charge = self->maxCharge;
+		}
+		else
+		{
+			if (!self->hasReleased)
 			{
-				projectile = entity_new();
-				if (projectile != NULL)
+				slog("calling shoot function");
+				player_shoot(self);
+			}
+			self->hasReleased = true;
+			self->charge = 0;
+		}
+		if (SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_TRIGGERLEFT) > 1000)
+		{
+			if (self->holding == NULL)
+			{
+				direction = vector2d_rotate(self->forward, self->fov * GF2D_PI / -360);
+				nearestStone = entity_closest_in_sight_by_layer(self, 6, eyePos, direction);
+				if (nearestStone != NULL)
 				{
-					copy_prefab(projectile, self->projectile);
-					projectile->position = self->position;
-					projectile->velocity = self->velocity;
+					vector2d_sub(diff, eyePos, nearestStone->position);
+					if (vector2d_magnitude_squared(diff) < 2500)
+					{
+						self->holding = nearestStone;
+						nearestStone->lastPosition = nearestStone->position;
+						nearestStone->position.x += self->velocity.x;
+						nearestStone->position.y += self->velocity.y;
+						self->moveSpeed *= 0.5;
+					}
 				}
 			}
 			else
 			{
-				slog("no projectile to spawn");
+				vector2d_sub(diff, eyePos, self->holding->position);
+				if (vector2d_magnitude_squared(diff) < 2500)
+				{
+					self->holding->lastPosition = self->holding->position;
+					self->holding->position.x += self->velocity.x;
+					self->holding->position.y += self->velocity.y;
+				}
+				else
+				{
+					self->holding = NULL;
+					self->moveSpeed *= 2;
+				}
 			}
+		}
+		else if (self->holding != NULL)
+		{
+			self->holding = NULL;
+			self->moveSpeed *= 2;
 		}
 	}
 	draw_line_of_sight(self, 1, 90, direction, vector4d(255,255,70,255), 10, eyePos);
@@ -104,4 +175,17 @@ void player_touch(Entity *self, Entity *other)
 	{
 		self->position = self->lastPosition;
 	}
+}
+
+void player_take_damage(Entity *self, int damage)
+{
+	self->health -= damage;
+	if (self->health <= 0)
+		self->die(self);
+}
+
+void player_die(Entity *self)
+{
+	entity_free(self);
+	set_player(NULL);
 }

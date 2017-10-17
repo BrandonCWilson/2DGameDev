@@ -18,6 +18,13 @@ FunctionParser funct[] =
 	,{ archer_init, "archer_init" }
 	,{ archer_touch, "archer_touch" }
 	,{ archer_update, "archer_update" }
+	,{ player_die, "player_die" }
+	,{ player_take_damage, "player_take_damage"	}
+	,{ archer_die, "archer_die" }
+	,{ archer_take_damage, "archer_take_damage" }
+	,{ arrow_die, "arrow_die" }
+	,{ archer_turn_to_stone, "archer_turn_to_stone" }
+	,{ stone_touch, "stone_touch" }
 };
 
 int level_MAX_WIDTH = 0;
@@ -46,53 +53,19 @@ void * config_loader_char_to_function(char *fname)
 	return NULL;
 }
 
-Entity *copy_prefab(Entity *ent, Entity *prefab)
-{
-	if (prefab->update != NULL)
-		ent->update = prefab->update;
-	if (prefab->sprite != NULL)
-	{
-		ent->sprite = prefab->sprite;
-		ent->colorShift = vector4d(255, 255, 255, 255);
-	}
-	ent->layer = prefab->layer;
-	if (prefab->touch != NULL)
-		ent->touch = prefab->touch;
-	if (prefab->coll != NULL)
-	{
-		ent->coll = box_collider_new();
-		ent->coll->width = prefab->coll->width;
-		ent->coll->height = prefab->coll->height;
-		ent->coll->parent = ent;
-	}
-	if (prefab->ouch != NULL)
-	{
-		ent->ouch = prefab->ouch;
-	}
-	if (prefab->init != NULL)
-		ent->init = prefab->init;
-	if (prefab->projectile != NULL)
-		ent->projectile = prefab->projectile;
-	ent->scale = prefab->scale;
-	ent->spriteOffset = prefab->spriteOffset;
-	ent->fov = prefab->fov;
-	ent->maxSight = prefab->maxSight;
-	ent->forward = vector2d(1, 0);
-	ent->moveSpeed = prefab->moveSpeed;
-	ent->turnSpeed = prefab->turnSpeed;
-	ent->huntRadius = prefab->huntRadius;
-}
-
 Entity * config_loader_get_prefab_by_name(char *name)
 {
 	int i;
+	slog("max prefabs: %i", prefab_manager.max);
 	for (i = 0; i < prefab_manager.max; i++)
 	{
+		slog("comparing.. %s %s", name, prefab_manager.prefab_list[i].name);
 		if (strcmp(prefab_manager.prefab_list[i].name, name) == 0)
 		{
 			return &prefab_manager.prefab_list[i];
 		}
 	}
+	slog("could not find the prefab you were looking for");
 	return NULL;
 }
 
@@ -114,6 +87,7 @@ int config_loader_entities_init_count_incoming(char *filename)
 			rtn += 1;
 	}
 	fclose(f);
+	slog("%i", rtn);
 	return rtn;
 }
 
@@ -130,7 +104,7 @@ void config_loader_entities_init(char *filename)
 	int i = 0;
 	int j;
 	// count the incoming prefabs and make some space
-	numEnts = config_loader_entities_init_count_incoming(filename);
+	numEnts = config_loader_entities_init_count_incoming(filename) + 1;
 	
 	prefab_manager.prefab_list = (Entity *)malloc(sizeof(Entity)*numEnts);
 	memset(prefab_manager.prefab_list, 0, sizeof(Entity)*numEnts);
@@ -147,6 +121,7 @@ void config_loader_entities_init(char *filename)
 		if (strcmp(buffer, "ent:") == 0)
 		{
 			fscanf(file, "%s", prefab_manager.prefab_list[i].name);
+			slog("new prefab: %s", prefab_manager.prefab_list[i].name);
 			strcpy(buffer, prefab_manager.prefab_list[i].name);
 			while (strcmp(buffer, "END") != 0)
 			{
@@ -231,7 +206,58 @@ void config_loader_entities_init(char *filename)
 					fscanf(file, "%f", &scalex);
 					prefab_manager.prefab_list[i].huntRadius = scalex;
 				}
+				if (strcmp(buffer, "die:") == 0)
+				{
+					fscanf(file, "%s", buffer);
+					prefab_manager.prefab_list[i].die = config_loader_char_to_function(buffer);
+				}
+				if (strcmp(buffer, "takedamage:") == 0)
+				{
+					fscanf(file, "%s", buffer);
+					prefab_manager.prefab_list[i].take_damage = config_loader_char_to_function(buffer);
+				}
+				if (strcmp(buffer, "health:") == 0)
+				{
+					fscanf(file, "%i", &int1);
+					prefab_manager.prefab_list[i].health = int1;
+				}
+				if (strcmp(buffer, "corpse:") == 0)
+				{
+					fscanf(file, "%s", buffer);
+					prefab_manager.prefab_list[i].corpse = config_loader_get_prefab_by_name(buffer);
+				}
+				if (strcmp(buffer, "reload:") == 0)
+				{
+					fscanf(file, "%i", &int1);
+					prefab_manager.prefab_list[i].reload = int1;
+				}
+				if (strcmp(buffer, "stone:") == 0)
+				{
+					fscanf(file, "%s", buffer);
+					prefab_manager.prefab_list[i].stone = config_loader_get_prefab_by_name(buffer);
+				}
+				if (strcmp(buffer, "turntostone:") == 0)
+				{
+					fscanf(file, "%s", buffer);
+					prefab_manager.prefab_list[i].turn_to_stone = config_loader_char_to_function(buffer);
+				}
+				if (strcmp(buffer, "damage:") == 0)
+				{
+					fscanf(file, "%i", &int1);
+					prefab_manager.prefab_list[i].damage = int1;
+				}
+				if (strcmp(buffer, "maxcharge:") == 0)
+				{
+					fscanf(file, "%i", &int1);
+					prefab_manager.prefab_list[i].maxCharge = int1;
+				}
+				if (strcmp(buffer, "shotspeed:") == 0)
+				{
+					fscanf(file, "%f", &scalex);
+					prefab_manager.prefab_list[i].shotSpeed = scalex;
+				}
 				fscanf(file, "%s", buffer);
+				slog("%s", buffer);
 			}
 			i++;
 			slog("%s", buffer);

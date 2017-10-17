@@ -198,8 +198,12 @@ TileMap *tilemap_load(char *filename, Vector2D position)
 		{
 			fscanf(file, "%s", buffer);
 			prefab = config_loader_get_prefab_by_name(buffer);
+			if (prefab == NULL)
+			{
+				slog("unable to find prefab");
+			}
 			ent = entity_new();
-			copy_prefab(ent, prefab);
+			entity_copy_prefab(ent, prefab);
 			if (ent->init)
 				ent->init(ent);
 			else
@@ -218,6 +222,11 @@ TileMap *tilemap_load(char *filename, Vector2D position)
 				{
 					fscanf(file, "%i,%i", &x, &y);
 					ent->position = vector2d(position.x + (x * tilemap->tileset->frame_w), position.y + (y * tilemap->tileset->frame_h));
+				}
+				if (strcmp("retreat:", buffer) == 0)
+				{
+					fscanf(file, "%i,%i", &x, &y);
+					ent->retreat = vector2d(x, y);
 				}
 				if (strcmp(buffer, "patrol:") == 0)
 				{
