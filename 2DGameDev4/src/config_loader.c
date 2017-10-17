@@ -79,6 +79,7 @@ Entity *copy_prefab(Entity *ent, Entity *prefab)
 	ent->maxSight = prefab->maxSight;
 	ent->forward = vector2d(1, 0);
 	ent->moveSpeed = prefab->moveSpeed;
+	ent->turnSpeed = prefab->turnSpeed;
 }
 
 Entity * config_loader_get_prefab_by_name(char *name)
@@ -213,6 +214,11 @@ void config_loader_entities_init(char *filename)
 				{
 					fscanf(file, "%f", &scalex);
 					prefab_manager.prefab_list[i].moveSpeed = scalex;
+				}
+				if (strcmp(buffer, "turnspeed:") == 0)
+				{
+					fscanf(file, "%f", &scalex);
+					prefab_manager.prefab_list[i].turnSpeed = scalex;
 				}
 				if (strcmp(buffer, "projectile:") == 0)
 				{

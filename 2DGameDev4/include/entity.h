@@ -25,11 +25,20 @@ typedef struct Entity_s
 	Vector2D spriteOffset;
 
 	double moveSpeed;
+	double turnSpeed;
 	Vector2D forward;
+	Vector2D eyePos;
 	double fov;
 	double maxSight;
 
 	struct Entity_s *projectile;
+
+	int alert;
+	int currentDestination;
+	int numPatrol;
+	Vector2D patrol[4];
+	Vector2D hunt[4];
+	Vector2D retreat;
 
 	BoxCollider *coll;
 	void(*update)(struct Entity_s *self);
@@ -60,11 +69,11 @@ void entity_free(Entity *ent);
 
 void entity_update_all();
 
-Entity *entity_closest_in_sight_by_layer(Entity *self, int layer);
+Entity *entity_closest_in_sight_by_layer(Entity *self, int layer, Vector2D eyePos, Vector2D direction);
 
-bool entity_can_i_see_you(Entity *self, Entity *other);
+bool entity_can_i_see_you(Entity *self, Entity *other, Vector2D eyePos, Vector2D direction);
 
-void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D direction, Vector4D color, double degreesToCheck);
+void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D direction, Vector4D color, double degreesToCheck, Vector2D eyePos);
 
 RaycastHit *raycast_through_all_entities(Vector2D start, Vector2D direction, int layer);
 

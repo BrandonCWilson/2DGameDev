@@ -15,7 +15,7 @@ typedef struct
 
 static EntManager entity_manager;
 
-bool entity_can_i_see_you(Entity *self, Entity *other)
+bool entity_can_i_see_you(Entity *self, Entity *other, Vector2D eyePos, Vector2D direction)
 {
 	int i;
 	double tmpAngle;
@@ -23,7 +23,7 @@ bool entity_can_i_see_you(Entity *self, Entity *other)
 	float initialAngle, endAngle;
 	Vector2D dir, end, rotated, longestColl;
 	RaycastHit *hit;
-	dir = self->forward;
+	dir = direction;
 	rotated = vector2d_rotate(dir, self->fov * GF2D_PI / 180);
 	initialAngle = vector2d_angle(dir); endAngle = vector2d_angle(rotated);
 	if (initialAngle < 0)
@@ -35,7 +35,7 @@ bool entity_can_i_see_you(Entity *self, Entity *other)
 		endAngle = endAngle + 360;
 	}
 	end = vector2d(other->position.x + other->coll->width / 2, other->position.y + other->coll->height / 2);
-	vector2d_sub(dir, end, self->position);
+	vector2d_sub(dir, end, eyePos);
 	vector2d_sub(longestColl, other->coll->corners[2], other->coll->corners[0]);
 	if (self->maxSight + vector2d_magnitude(longestColl) / 2 < vector2d_magnitude(dir))
 		return 0;
@@ -47,20 +47,20 @@ bool entity_can_i_see_you(Entity *self, Entity *other)
 	{
 		return 0;
 	}
-	vector2d_add(end, dir, self->position);
+	vector2d_add(end, dir, eyePos);
 	// check for walls blocking vision
-	hit = raycast_through_all_entities(self->position, end, 1);
+	hit = raycast_through_all_entities(eyePos, end, 1);
 	if (!hit)
 		return 0;
 	if (hit->other != NULL)
 	{
-		gf2d_draw_line(self->position, hit->hitpoint, vector4d(255, 0, 0, 255));
+		gf2d_draw_line(eyePos, hit->hitpoint, vector4d(255, 0, 0, 255));
 		return 0;
 	}
-	gf2d_draw_line(self->position, hit->hitpoint, vector4d(0, 255, 0, 255));
+	gf2d_draw_line(eyePos, hit->hitpoint, vector4d(0, 255, 0, 255));
 	raycasthit_free(hit);
 	// check if we can see the ent on its own layer
-	hit = raycast_through_all_entities(self->position, end, other->layer);
+	hit = raycast_through_all_entities(eyePos, end, other->layer);
 	if (!hit)
 		return 0;
 	if (hit->other == NULL)
@@ -68,14 +68,14 @@ bool entity_can_i_see_you(Entity *self, Entity *other)
 		raycasthit_free(hit);
 		return 0;
 	}
-	gf2d_draw_line(self->position, hit->hitpoint, vector4d(255, 255, 255, 255));
+	gf2d_draw_line(eyePos, hit->hitpoint, vector4d(255, 255, 255, 255));
 	if (hit->other->parent == other)
 		return 1;
 	raycasthit_free(hit);
 	return 0;
 }
 
-Entity *entity_closest_in_sight_by_layer(Entity *self, int layer)
+Entity *entity_closest_in_sight_by_layer(Entity *self, int layer, Vector2D eyePos, Vector2D direction)
 {
 	int i;
 	Entity *closest = NULL;
@@ -87,12 +87,14 @@ Entity *entity_closest_in_sight_by_layer(Entity *self, int layer)
 			continue;
 		if (entity_manager.ent_list[i].layer != layer)
 			continue;
-		if (entity_can_i_see_you(self, &entity_manager.ent_list[i]) == 1)
+		if (&entity_manager.ent_list[i] == self)
+			continue;
+		if (entity_can_i_see_you(self, &entity_manager.ent_list[i], eyePos, direction) == 1)
 		{
 			vector2d_sub(diff, 
 				vector2d(entity_manager.ent_list[i].position.x + entity_manager.ent_list[i].coll->width / 2,
 					entity_manager.ent_list[i].position.y + entity_manager.ent_list[i].coll->height / 2),
-				self->position);
+				eyePos);
 			if (vector2d_magnitude_squared(diff) < minDist)
 			{
 				closest = &entity_manager.ent_list[i];
@@ -349,7 +351,7 @@ void connect_to_walls(RaycastHit *hit, Entity *self, float fwdMag, Vector2D forw
 	}
 }
 
-void draw_line_of_sight_2(Entity *self, int layer, double fov, Vector2D forward, Vector4D color, double precision)
+void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward, Vector4D color, double precision, Vector2D eyePos)
 {
 	int i, j, numPoints;
 	Sint16 *x, *y;
@@ -381,28 +383,28 @@ void draw_line_of_sight_2(Entity *self, int layer, double fov, Vector2D forward,
 	{
 		endAngle = endAngle + 360;
 	}
-	vector2d_add(end, self->position, dir);
-	hit = raycast_through_all_entities(self->position, end, layer);
+	vector2d_add(end, eyePos, dir);
+	hit = raycast_through_all_entities(eyePos, end, layer);
 	if (!hit) return;
-	vector2d_sub(hitdiff, hit->hitpoint, self->position);
+	vector2d_sub(hitdiff, hit->hitpoint, eyePos);
 	initialHitpoint = hit->hitpoint;
 	pqlist_insert(pts, hit, acos(vector2d_dot_product(hitdiff, forward) / (vector2d_magnitude(hitdiff)*fwdMag)));
 	connect_to_walls(hit, self, fwdMag, forward, pts, initialAngle, endAngle);
-	vector2d_add(end, self->position, rotated);
-	hit = raycast_through_all_entities(self->position, end, layer);
+	vector2d_add(end, eyePos, rotated);
+	hit = raycast_through_all_entities(eyePos, end, layer);
 	if (!hit) return;
-	vector2d_sub(hitdiff, hit->hitpoint, self->position);
+	vector2d_sub(hitdiff, hit->hitpoint, eyePos);
 	endHitpoint = hit->hitpoint;
 	pqlist_insert(pts, hit, acos(vector2d_dot_product(hitdiff, forward) / (vector2d_magnitude(hitdiff)*fwdMag)));
 	connect_to_walls(hit, self, fwdMag, forward, pts, initialAngle, endAngle);
 	for (tmpAngle = 0; tmpAngle < fov * (GF2D_PI / 180); tmpAngle += (precision * GF2D_PI / 180))
 	{
 		dir = vector2d_rotate(forward, tmpAngle);
-		vector2d_add(end, dir, self->position);
-		hit = raycast_through_all_entities(self->position, end, layer);
+		vector2d_add(end, dir, eyePos);
+		hit = raycast_through_all_entities(eyePos, end, layer);
 		if (!hit)
 			continue;
-		vector2d_sub(hitdiff, hit->hitpoint, self->position);
+		vector2d_sub(hitdiff, hit->hitpoint, eyePos);
 		pqlist_insert(pts, hit, tmpAngle);
 		connect_to_walls(hit, self, fwdMag, forward, pts, initialAngle, endAngle);
 	}
@@ -413,7 +415,7 @@ void draw_line_of_sight_2(Entity *self, int layer, double fov, Vector2D forward,
 		if (entity_manager.ent_list[i].layer != layer) continue;
 		for (j = 0; j < 4; j++)
 		{
-			vector2d_sub(dir, entity_manager.ent_list[i].coll->corners[j], self->position);
+			vector2d_sub(dir, entity_manager.ent_list[i].coll->corners[j], eyePos);
 			end = entity_manager.ent_list[i].coll->corners[j];
 			if (fwdMagSquared < vector2d_magnitude_squared(dir))
 				continue;
@@ -425,11 +427,11 @@ void draw_line_of_sight_2(Entity *self, int layer, double fov, Vector2D forward,
 			{
 				continue;
 			}
-			vector2d_add(end, dir, self->position);
-			hit = raycast_through_all_entities(self->position, end, layer);
+			vector2d_add(end, dir, eyePos);
+			hit = raycast_through_all_entities(eyePos, end, layer);
 			if (!hit)
 				continue;
-			vector2d_sub(hitdiff, hit->hitpoint, self->position);
+			vector2d_sub(hitdiff, hit->hitpoint, eyePos);
 			pqlist_insert(pts, hit, acos(vector2d_dot_product(hitdiff, forward) / (vector2d_magnitude(hitdiff)*fwdMag)));
 			connect_to_walls(hit, self, fwdMag, forward, pts, initialAngle, endAngle);
 			if ((hit->hitpoint.x == entity_manager.ent_list[i].coll->corners[j].x)
@@ -437,17 +439,17 @@ void draw_line_of_sight_2(Entity *self, int layer, double fov, Vector2D forward,
 			{
 				vector2d_set_magnitude(&dir, fwdMag);
 				dir = vector2d_rotate(dir, 0.01);
-				vector2d_add(end, dir, self->position);
-				hit = raycast_through_all_entities(self->position, end, layer);
+				vector2d_add(end, dir, eyePos);
+				hit = raycast_through_all_entities(eyePos, end, layer);
 				if (!hit) continue;
-				vector2d_sub(hitdiff, hit->hitpoint, self->position);
+				vector2d_sub(hitdiff, hit->hitpoint, eyePos);
 				pqlist_insert(pts, hit, acos(vector2d_dot_product(hitdiff, forward) / (vector2d_magnitude(hitdiff)*fwdMag)));
 				connect_to_walls(hit, self, fwdMag, forward, pts, initialAngle, endAngle);
 				dir = vector2d_rotate(dir, -0.02);
-				vector2d_add(end, dir, self->position);
-				hit = raycast_through_all_entities(self->position, end, layer);
+				vector2d_add(end, dir, eyePos);
+				hit = raycast_through_all_entities(eyePos, end, layer);
 				if (!hit) continue;
-				vector2d_sub(hitdiff, hit->hitpoint, self->position);
+				vector2d_sub(hitdiff, hit->hitpoint, eyePos);
 				pqlist_insert(pts, hit, acos(vector2d_dot_product(hitdiff, forward) / (vector2d_magnitude(hitdiff)*fwdMag)));
 				connect_to_walls(hit, self, fwdMag, forward, pts, initialAngle, endAngle);
 			}
@@ -468,8 +470,8 @@ void draw_line_of_sight_2(Entity *self, int layer, double fov, Vector2D forward,
 		return;
 	}
 	memset(x, 0, sizeof(Sint16)*(numPoints)); memset(y, 0, sizeof(Sint16)*(numPoints));
-	x[0] = self->position.x;
-	y[0] = self->position.y;
+	x[0] = eyePos.x;
+	y[0] = eyePos.y;
 	x[1] = endHitpoint.x;
 	y[1] = endHitpoint.y;
 	i = 2;
@@ -490,11 +492,6 @@ void draw_line_of_sight_2(Entity *self, int layer, double fov, Vector2D forward,
 	pqlist_free(pts, raycasthit_free);
 	free(x);
 	free(y);
-}
-
-void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward, Vector4D color, double precision)
-{
-	draw_line_of_sight_2(self, layer, fov, forward, color, precision);
 }
 
 RaycastHit *raycast_through_all_entities(Vector2D start, Vector2D direction, int layer)
@@ -618,8 +615,6 @@ void entity_update_all()
 	{
 		if (entity_manager.ent_list[i].inUse)
 		{
-
-			
 			// handle the entity think functions
 			if (!entity_manager.ent_list[i].update)
 			{

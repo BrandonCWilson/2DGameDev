@@ -117,6 +117,7 @@ TileMap *tilemap_load(char *filename, Vector2D position)
 	char spritefile[1024];
 	int framewidth, frameheight, framesperline;
 	int tileCtr = 0;
+	int i;
 	if (!filename)return NULL;
 	file = fopen(filename, "r");
 	if (!file)
@@ -217,6 +218,27 @@ TileMap *tilemap_load(char *filename, Vector2D position)
 				{
 					fscanf(file, "%i,%i", &x, &y);
 					ent->position = vector2d(position.x + (x * tilemap->tileset->frame_w), position.y + (y * tilemap->tileset->frame_h));
+				}
+				if (strcmp(buffer, "patrol:") == 0)
+				{
+					i = 0;
+					while (strcmp(buffer, "patrol_end") != 0)
+					{
+						if (i <= 3)
+						{
+							fscanf(file, "%i,%i", &x, &y);
+							ent->patrol[i] = vector2d(x, y);
+						}
+						else
+							slog("ERROR: cannot support more than 4 patrol locations. discarding position %i", i);
+						fscanf(file, "%s", buffer);
+						i++;
+					}
+					ent->currentDestination = 0;
+					if (i - 1 <= 3)
+						ent->numPatrol = i - 1;
+					else
+						ent->numPatrol = 3;
 				}
 			}
 		}
