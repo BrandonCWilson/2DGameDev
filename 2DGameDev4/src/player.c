@@ -21,6 +21,16 @@ Entity *get_player()
 	return player;
 }
 
+void player_draw(Entity *self)
+{
+	Vector2D eyePos;
+	vector2d_add(eyePos, self->position, self->eyePos);
+	direction = self->forward;
+	direction = vector2d_rotate(direction, self->fov * GF2D_PI / -360);
+
+	draw_line_of_sight(self, 1, self->fov, direction, vector4d(255, 255, 70, 255), 10, eyePos);
+}
+
 void player_init(Entity *self)
 {
 	int i;
@@ -44,6 +54,7 @@ void player_init(Entity *self)
 			self->coll->width / 2,
 			self->coll->height / 2);
 	}
+	self->draw = player_draw;
 }
 
 void player_eat(Entity *self, Vector2D eyePos)
@@ -156,8 +167,8 @@ void player_update(Entity *self)
 
 	vector2d_add(eyePos, self->position, self->eyePos);
 
-	direction = self->forward;
-	direction = vector2d_rotate(direction, self->fov * GF2D_PI / -360);
+	//direction = self->forward;
+	//direction = vector2d_rotate(direction, self->fov * GF2D_PI / -360);
 	self->lastPosition = self->position;
 	if (!controller)
 	{
@@ -215,9 +226,11 @@ void player_update(Entity *self)
 			self->holding = NULL;
 		}
 	}
-	draw_line_of_sight(self, 1, 90, direction, vector4d(255,255,70,255), 10, eyePos);
+	//draw_line_of_sight(self, 1, self->fov, direction, vector4d(255,255,70,255), 10, eyePos);
 	self->timer += 1;
 }
+
+
 
 void player_touch(Entity *self, Entity *other)
 {

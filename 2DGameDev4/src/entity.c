@@ -255,7 +255,7 @@ void entity_update_all_colliders()
 				);
 		}
 		// collider line for debugging purposes
-		gf2d_draw_line(
+		/*gf2d_draw_line(
 			entity_manager.ent_list[i].position,
 			entity_manager.ent_list[i].coll->corners[0],
 			vector4d(0, 255, 255, 255));
@@ -270,7 +270,7 @@ void entity_update_all_colliders()
 		gf2d_draw_line(
 			entity_manager.ent_list[i].position,
 			entity_manager.ent_list[i].coll->corners[3],
-			vector4d(255, 255, 255, 255));
+			vector4d(255, 255, 255, 255));*/
 	}
 }
 
@@ -757,6 +757,7 @@ void entity_update_all()
 	check_box_collisions(4, 1);
 	check_box_collisions(4, 2);
 	check_box_collisions(4, 3);
+	check_box_collisions(5, 1);
 	check_box_collisions(6, 1);
 	for (i = 0; i < entity_manager.max_entities; i++)
 	{
@@ -804,10 +805,20 @@ void entity_draw(Entity *ent)
 void entity_draw_all()
 {
 	int i;
+	// draw their special draw functions... line of sight mostly
 	for (i = 0; i < entity_manager.max_entities; i++)
 	{
-		if (entity_manager.ent_list[i].inUse)
-			entity_draw(&entity_manager.ent_list[i]);
+		if (!entity_manager.ent_list[i].inUse)
+			continue;
+		if (entity_manager.ent_list[i].draw != NULL)
+			entity_manager.ent_list[i].draw(&entity_manager.ent_list[i]);
+	}
+	// draw the entities themselves
+	for (i = 0; i < entity_manager.max_entities; i++)
+	{
+		if (!entity_manager.ent_list[i].inUse)
+			continue;
+		entity_draw(&entity_manager.ent_list[i]);
 	}
 }
 

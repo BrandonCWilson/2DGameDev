@@ -254,6 +254,25 @@ void enemy_set_alert(Entity *self, Vector2D eyePos, Vector2D forward, double hun
 	}
 }
 
+void archer_draw(Entity *self)
+{
+	Vector2D direction, eyePos;
+	Vector4D color;
+	vector2d_add(eyePos, self->position, self->eyePos);
+	direction = self->forward;
+	direction = vector2d_rotate(direction, self->fov * GF2D_PI / -360);
+	if (self->alert != 0)
+	{
+		color = vector4d(0, 0, 70, 255);
+	}
+	else
+	{
+		color = vector4d(0, 0, 160, 0);
+	}
+	vector2d_set_magnitude(&direction, self->maxSight);
+	draw_line_of_sight(self, 1, self->fov, direction, color, 20, eyePos);
+}
+
 void archer_update(Entity *self)
 {
 	Vector2D direction;
@@ -274,16 +293,6 @@ void archer_update(Entity *self)
 	direction = self->forward;
 	direction = vector2d_rotate(direction, self->fov * GF2D_PI / -360);
 	enemy_set_alert(self, eyePos, direction, self->huntRadius, map);
-	if (self->alert != 0)
-	{
-		color = vector4d(0, 0, 70, 255);
-	}
-	else
-	{
-		color = vector4d(0, 0, 160, 0);
-	}
-	vector2d_set_magnitude(&direction, self->maxSight);
-	draw_line_of_sight(self, 1, self->fov, direction, color, 20, eyePos);
 	//self->forward = vector2d_rotate(self->forward, 0.01);
 	vector2d_sub(start, self->position, map->position);
 	start = vector2d((int)(start.x / map->tileset->frame_w), (int)(start.y / map->tileset->frame_h));
@@ -336,6 +345,7 @@ void archer_init(Entity *self)
 			self->coll->width / 2,
 			self->coll->height / 2);
 	}
+	self->draw = archer_draw;
 }
 
 void archer_touch(Entity *self, Entity *other)
@@ -348,6 +358,8 @@ void archer_take_damage(Entity *self, int damage)
 	if (!self)
 		return;
 	self->health -= damage;
+	if (self->ouch != NULL)
+		sound_play(self->ouch, 0, self->ouch->volume, self->ouch->defaultChannel, 0);
 	if (self->health <= 0)
 	{
 		self->die(self);
@@ -392,6 +404,8 @@ void stone_touch(Entity *self, Entity *other)
 		return;
 	if (other->layer == 1)
 		self->position = self->lastPosition;
+	if (self->layer == 5)
+		slog("meat is touching D:");
 }
 
 void corpse_free(Entity *self)

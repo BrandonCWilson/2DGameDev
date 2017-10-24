@@ -79,6 +79,7 @@ typedef struct Entity_s
 	void(*take_damage)(struct Entity_s *self, int damage);
 	void(*die)(struct Entity_s *self);
 	void(*turn_to_stone)(struct Entity_s *self);
+	void(*draw)(struct Entity_s *self);
 	
 	Sound *ouch;
 	int lastHit;
