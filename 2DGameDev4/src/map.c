@@ -100,11 +100,15 @@ void tilemap_load_walls(TileMap *tilemap, Vector2D position)
 				ent->coll->height = tilemap->tileset->frame_h;
 				ent->coll->parent = ent;
 				sprintf(ent->name, "%s (%i)", "Wall", ((j*tilemap->width) + i));
+				// don't bother, we need to draw the walkable tiles anyway
 				//ent->sprite = tilemap->tileset;
 				ent->layer = 1;
 			}
 		}
 	}
+
+	// connect walls
+	entity_collapse_walls(tilemap);
 }
 
 TileMap *tilemap_load(char *filename, Vector2D position)
@@ -308,22 +312,4 @@ void tilemap_draw_walls(TileMap *tilemap, Vector2D position)
 				tilemap->map[(j * tilemap->width) + i] - '0');
 		}
 	}
-	gf2d_sprite_draw(
-		tilemap->tileset,
-		vector2d(position.x + (tilemap->start.x * tilemap->tileset->frame_w), position.y + (tilemap->start.y * tilemap->tileset->frame_h)),
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-		2);
-	gf2d_sprite_draw(
-		tilemap->tileset,
-		vector2d(position.x + (tilemap->end.x * tilemap->tileset->frame_w), position.y + (tilemap->end.y * tilemap->tileset->frame_h)),
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-		3);
 }

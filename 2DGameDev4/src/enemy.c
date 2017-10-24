@@ -208,6 +208,7 @@ void enemy_set_alert(Entity *self, Vector2D eyePos, Vector2D forward, double hun
 	}
 	else if (self->alert == 3)
 	{
+		slog("i can no longer see the player");
 		self->alert = 1;
 		enemy_set_hunting_points(self, self->lastKnownPosition, self->huntRadius, map);
 		enemy_set_path(self);
@@ -279,7 +280,7 @@ void archer_update(Entity *self)
 	}
 	else
 	{
-		color = vector4d(255, 0, 70, 0);
+		color = vector4d(0, 0, 160, 0);
 	}
 	vector2d_set_magnitude(&direction, self->maxSight);
 	draw_line_of_sight(self, 1, self->fov, direction, color, 20, eyePos);
@@ -318,9 +319,10 @@ void archer_update(Entity *self)
 	}
 	else
 	{
-		slog("start movement");
+		// if we can see the player.. don't bother moving, we're close enough
+		if (self->alert == 3)
+			return;
 		move_along_path(self->patharray, self, start, map, direction);
-		slog("end movement");
 	}
 }
 

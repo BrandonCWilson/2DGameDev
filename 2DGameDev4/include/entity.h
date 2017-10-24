@@ -16,6 +16,7 @@ typedef struct Entity_s
 	char name[255];
 
 	int health;
+	int maxHealth;
 	int damage;
 
 	int killCount;
@@ -118,6 +119,10 @@ void entity_draw_all();
 void entity_system_close();
 
 void entity_copy_prefab(Entity *ent, Entity *prefab);
+
+void entity_collapse_walls(TileMap *tilemap);
+
+void entity_draw_health_bars();
 #endif
 
 #pragma once

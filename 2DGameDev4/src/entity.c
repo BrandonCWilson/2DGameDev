@@ -15,6 +15,76 @@ typedef struct
 
 static EntManager entity_manager;
 
+void entity_draw_health_bars()
+{
+	int i;
+	double x[3], y[3];
+	Vector2D hpPos;
+	for (i = 0; i < entity_manager.max_entities; i++)
+	{
+		if (entity_manager.ent_list[i].inUse == false)
+			continue;
+		if (entity_manager.ent_list[i].maxHealth == 0)
+			continue;
+		if (entity_manager.ent_list[i].sprite == NULL)
+			continue;
+		hpPos = vector2d(
+			entity_manager.ent_list[i].position.x + entity_manager.ent_list[i].spriteOffset.x + entity_manager.ent_list[i].sprite->frame_w / 2,
+			entity_manager.ent_list[i].position.y + entity_manager.ent_list[i].spriteOffset.y + entity_manager.ent_list[i].sprite->frame_h + 5
+			);
+		x[0] = hpPos.x - entity_manager.ent_list[i].sprite->frame_w * 0.75; y[0] = hpPos.y;
+		x[2] = hpPos.x + entity_manager.ent_list[i].sprite->frame_w * 0.75; y[2] = hpPos.y + 5;
+		x[1] = x[0] + entity_manager.ent_list[i].sprite->frame_w * 1.5 * ((double)entity_manager.ent_list[i].health / entity_manager.ent_list[i].maxHealth); y[1] = y[2];
+		boxRGBA(gf2d_graphics_get_renderer(),
+			x[0], y[0],
+			x[2], y[2],
+			0, 0, 0, 255);
+		boxRGBA(gf2d_graphics_get_renderer(),
+			x[0], y[0],
+			x[1], y[1],
+			255 * (entity_manager.ent_list[i].layer == 2 ? 0: 1), 0 + 255 * (entity_manager.ent_list[i].layer == 2 ? 1 : 0), 0, 255);
+	}
+
+}
+
+void entity_collapse_walls(TileMap *tilemap)
+{
+	int i, j;
+
+	for (i = 0; i < entity_manager.max_entities; i++)
+	{
+		if (entity_manager.ent_list[i].inUse == false)
+			continue;
+		if (entity_manager.ent_list[i].coll == NULL)
+			continue;
+		if (entity_manager.ent_list[i].layer == 1)
+		{
+			// check if there's a row above me that i can connect to
+			for (j = 0; j < entity_manager.max_entities; j++)
+			{
+				if (entity_manager.ent_list[j].inUse == false)
+					continue;
+				if (entity_manager.ent_list[j].layer != 1)
+					continue;
+				if (entity_manager.ent_list[j].coll == NULL)
+					continue;
+				if (entity_manager.ent_list[j].position.x == entity_manager.ent_list[i].position.x)
+				{
+					if (entity_manager.ent_list[j].position.y == (entity_manager.ent_list[i].position.y + entity_manager.ent_list[i].coll->height))
+					{
+						if (entity_manager.ent_list[j].coll->width == entity_manager.ent_list[i].coll->width)
+						{
+							entity_manager.ent_list[i].coll->height += entity_manager.ent_list[j].coll->height;
+							entity_free(&entity_manager.ent_list[j]);
+						}
+					}
+				}
+			}
+		}
+	}
+
+}
+
 void entity_copy_prefab(Entity *ent, Entity *prefab)
 {
 	if (!ent || !prefab)
@@ -50,7 +120,8 @@ void entity_copy_prefab(Entity *ent, Entity *prefab)
 		ent->take_damage = prefab->take_damage;
 	if (prefab->die != NULL)
 		ent->die = prefab->die;
-	ent->health = prefab->health;
+	ent->health = prefab->maxHealth;
+	ent->maxHealth = prefab->maxHealth;
 	ent->scale = prefab->scale;
 	ent->spriteOffset = prefab->spriteOffset;
 	ent->fov = prefab->fov;

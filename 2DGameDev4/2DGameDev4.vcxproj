@@ -31,6 +31,7 @@
     <ClCompile Include="src\config_loader.c" />
     <ClCompile Include="src\enemy.c" />
     <ClCompile Include="src\entity.c" />
+    <ClCompile Include="src\hud.c" />
     <ClCompile Include="src\map.c" />
     <ClCompile Include="src\pathfinding.c" />
     <ClCompile Include="src\player.c" />
@@ -54,6 +55,7 @@
     <ClInclude Include="include\config_loader.h" />
     <ClInclude Include="include\enemy.h" />
     <ClInclude Include="include\entity.h" />
+    <ClInclude Include="include\hud.h" />
     <ClInclude Include="include\map.h" />
     <ClInclude Include="include\pathfinding.h" />
     <ClInclude Include="include\player.h" />

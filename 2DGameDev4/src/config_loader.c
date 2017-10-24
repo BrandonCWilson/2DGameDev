@@ -220,7 +220,7 @@ void config_loader_entities_init(char *filename)
 				if (strcmp(buffer, "health:") == 0)
 				{
 					fscanf(file, "%i", &int1);
-					prefab_manager.prefab_list[i].health = int1;
+					prefab_manager.prefab_list[i].maxHealth = int1;
 				}
 				if (strcmp(buffer, "corpse:") == 0)
 				{

@@ -222,7 +222,7 @@ void player_update(Entity *self)
 
 void player_touch(Entity *self, Entity *other)
 {
-	if (self->timer - self->lastHit > 60)
+	if ((self->timer - self->lastHit > 60)&&(other->layer != 1)&&(other->parent != self))
 	{
 		self->colorShift.x -= 5;
 		self->lastHit = self->timer;
@@ -237,6 +237,7 @@ void player_touch(Entity *self, Entity *other)
 void player_take_damage(Entity *self, int damage)
 {
 	self->health -= damage;
+	slog("player health: %i %i", player->maxHealth, player->health);
 	if (self->health <= 0)
 		self->die(self);
 }
@@ -245,4 +246,5 @@ void player_die(Entity *self)
 {
 	entity_free(self);
 	set_player(NULL);
+	slog("player dead");
 }
