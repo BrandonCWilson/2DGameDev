@@ -116,6 +116,8 @@ void entity_draw(Entity *ent);
 
 void entity_draw_all();
 
+void entity_clear_all();
+
 void entity_system_close();
 
 void entity_copy_prefab(Entity *ent, Entity *prefab);

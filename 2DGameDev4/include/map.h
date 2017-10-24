@@ -29,4 +29,6 @@ void tilemap_draw_walls(TileMap *tilemap, Vector2D position);
 void tilemap_load_walls(TileMap *tilemap, Vector2D position);
 
 TileMap *get_current_tilemap();
+
+void tilemap_free(TileMap *tilemap);
 #endif

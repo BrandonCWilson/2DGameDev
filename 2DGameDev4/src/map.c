@@ -19,6 +19,24 @@ TileMap *get_current_tilemap()
 	return currentmap;
 }
 
+void tilemap_free(TileMap *tilemap)
+{
+	if (!tilemap)
+		return;
+	slog("setting the current tilemap");
+	if (tilemap == get_current_tilemap())
+		set_current_tilemap(NULL);
+	slog("freeing the sprite");
+	if (tilemap->tileset != NULL)
+		gf2d_sprite_free(tilemap->tileset);
+	slog("freeing the map");
+	slog("reading the map %s", tilemap->map);
+	if (tilemap->map != NULL)
+		free(tilemap->map);
+	slog("freeing the tilemap entirely");
+	free(tilemap);
+}
+
 void draw_tile(Tile *t, float tile_width, int x, int y)
 {
 	// check if tile is on or near screen
@@ -48,17 +66,6 @@ void draw_map(Map *m)
 			draw_tile(t, 32, i, j);
 		}
 	}
-}
-
-void tilemap_free(TileMap *tilemap)
-{
-	if (!tilemap)return;
-	if (tilemap->map)
-	{
-		free(tilemap->map);
-	}
-	gf2d_sprite_free(tilemap->tileset);
-	free(tilemap);
 }
 
 void tilemap_load_walls(TileMap *tilemap, Vector2D position)
@@ -176,7 +183,7 @@ TileMap *tilemap_load(char *filename, Vector2D position)
 				fclose(file);
 				return NULL;
 			}
-			tilemap->map = (char *)malloc(sizeof(char) * tilemap->width * tilemap->height);
+			tilemap->map = (char *)malloc(sizeof(char) * (tilemap->width * tilemap->height + 1));
 			if (!tilemap->map)
 			{
 				slog("failed to allocate data for map tile data");
@@ -184,7 +191,7 @@ TileMap *tilemap_load(char *filename, Vector2D position)
 				fclose(file);
 				return NULL;
 			}
-			memset(tilemap->map, 0, sizeof(char) * tilemap->width * tilemap->height);
+			memset(tilemap->map, 0, sizeof(char) * (tilemap->width * tilemap->height + 1));
 			while (fscanf(file, "%s", buffer) != EOF)
 			{
 				if (buffer[0] == '#')
