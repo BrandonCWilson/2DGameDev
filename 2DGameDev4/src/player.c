@@ -31,7 +31,6 @@ void player_init(Entity *self)
 		if (SDL_IsGameController(i)) {
 			slog("Index \'%i\' is a compatible controller, named \'%s\'\n", i, SDL_GameControllerNameForIndex(i));
 			controller = SDL_GameControllerOpen(i);
-			joystick = SDL_GameControllerGetJoystick(controller);
 		}
 		else {
 			slog("Index \'%i\' is not a compatible controller.\n", i);
