@@ -1,0 +1,87 @@
+ent: Arrow
+update: arrow_update
+sprite: images/rodyk.png 1313,746,1
+spriteoffset: -50,-20
+scale: 0.05,0.05
+boxcollider: 20,20
+ouch: audio/player_ouch.mp3 50,1
+layer: 4
+touch: arrow_touch
+init: arrow_init
+die: arrow_die
+damage: 15
+END ENTITY
+
+ent: Player
+update: player_update
+takedamage: player_take_damage
+die: player_die
+projectile: Arrow
+movespeed: 1
+fov: 90
+sprite: images/pointer.png 32,32,16
+spriteoffset: -5,-5
+scale: 1,1
+boxcollider: 20,20
+ouch: audio/player_ouch.mp3 50,1
+layer: 2
+touch: player_touch
+init: player_init
+health: 150
+maxsight: 100.0
+maxcharge: 60
+reload: 10
+shotspeed: 10.0
+END ENTITY
+
+ent: Bones
+layer: 7
+sprite: images/skellington.png 100,134,1
+spriteoffset: -15,-20
+scale: 0.5,0.5
+END ENTITY
+
+ent: Corpse
+layer: 5
+sprite: images/meat.png 128,128,1
+spriteoffset: -15,-20
+boxcollider: 25,32
+scale: 0.5,0.5
+die: corpse_die
+corpse: Bones
+touch: stone_touch
+END ENTITY
+
+ent: Statue
+layer: 6
+sprite: images/statue.png 64,64,1
+scale: 1,1
+boxcollider: 20,30
+spriteoffset: -20,-40
+touch: stone_touch
+END ENTITY
+
+ent: Archer
+update: archer_update
+takedamage: archer_take_damage
+die: archer_die
+sprite: images/pointer.png 32,32,16
+projectile: Arrow
+reload: 32
+spriteoffset: 0,0
+scale: 1,1
+fov: 120
+maxsight: 400.0
+movespeed: 5
+turnspeed: 3
+boxcollider: 20,20
+huntradius: 200.0
+layer: 3
+touch: archer_touch
+init: archer_init
+corpse: Corpse
+stone: Statue
+turntostone: archer_turn_to_stone
+health: 20
+ouch: audio/player_ouch.mp3 50,1
+END ENTITY
