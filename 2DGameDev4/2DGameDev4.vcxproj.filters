@@ -78,6 +78,9 @@
     <ClCompile Include="src\hud.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\window.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\git\gameframework2d-master\include\gf2d_draw.h">
@@ -144,6 +147,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\hud.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

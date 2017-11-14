@@ -40,6 +40,7 @@
     <ClCompile Include="src\raycast.c" />
     <ClCompile Include="src\testUpdate.c" />
     <ClCompile Include="src\tile.c" />
+    <ClCompile Include="src\window.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\git\gameframework2d-master\include\gf2d_draw.h" />
@@ -64,6 +65,7 @@
     <ClInclude Include="include\raycast.h" />
     <ClInclude Include="include\testUpdate.h" />
     <ClInclude Include="include\tile.h" />
+    <ClInclude Include="include\window.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3D9E2002-3309-47A7-AD7C-D308D1AA09D5}</ProjectGuid>
