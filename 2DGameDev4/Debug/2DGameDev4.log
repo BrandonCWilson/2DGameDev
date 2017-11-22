@@ -1,2 +1,3 @@
-﻿  window.c
+﻿  pause.c
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\pause.c(25): warning C4098: 'pause_window_init': 'void' function returning a value
   2DGameDev4.vcxproj -> C:\Users\Brando\Documents\Visual Studio 2015\Projects\2DGameDev4\Debug\2DGameDev4.exe

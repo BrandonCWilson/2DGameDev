@@ -4,6 +4,7 @@
 #include "testUpdate.h"
 #include "gf2d_draw.h"
 #include "config_loader.h"
+#include "input.h"
 
 SDL_GameController *controller;
 SDL_Joystick *joystick;
@@ -177,9 +178,9 @@ void player_update(Entity *self)
 	}
 	else
 	{
-		self->velocity.x = self->moveSpeed * SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTX) / (double)10000;
-		self->velocity.y = self->moveSpeed * SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTY) / (double)10000;
-		self->forward = vector2d(SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_RIGHTX), SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_RIGHTY));
+		self->velocity.x = self->moveSpeed * input_get_axis(INPUT_AXIS_MOVE_X) / (double)10000;
+		self->velocity.y = self->moveSpeed * input_get_axis(INPUT_AXIS_MOVE_Y) / (double)10000;
+		self->forward = vector2d(input_get_axis(INPUT_AXIS_FWD_X), input_get_axis(INPUT_AXIS_FWD_Y));
 		if (vector2d_magnitude_squared(self->velocity) < 0.1)
 		{
 			self->velocity = vector2d(0, 0);
@@ -191,7 +192,8 @@ void player_update(Entity *self)
 			self->forward = self->lastForward;
 		}
 		vector2d_set_magnitude(&self->forward, self->maxSight);
-		if (SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_TRIGGERRIGHT) > 1000)
+		//if (SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_TRIGGERRIGHT) > 1000)
+		if (input_get_button(INPUT_BUTTON_CHARGE))
 		{
 			self->hasReleased = false;
 			self->charge += 1;
@@ -207,7 +209,7 @@ void player_update(Entity *self)
 			self->hasReleased = true;
 			self->charge = 0;
 		}
-		if (SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_X))
+		if (input_get_button(INPUT_BUTTON_MELEE))
 		{
 			if (self->releasedX)
 				player_eat(self, eyePos);
@@ -215,7 +217,7 @@ void player_update(Entity *self)
 		}
 		else
 			self->releasedX = true;
-		if (SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_TRIGGERLEFT) > 1000)
+		if (input_get_button(INPUT_BUTTON_PULL))
 		{
 			player_pull(self, eyePos);
 		}
