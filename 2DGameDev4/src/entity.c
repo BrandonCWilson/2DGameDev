@@ -752,7 +752,6 @@ void entity_free(Entity *ent)
 void entity_update_all()
 {
 	int i;
-	entity_update_all_colliders();
 	for (i = 0; i < entity_manager.max_entities; i++)
 	{
 		if (entity_manager.ent_list[i].inUse)
@@ -778,6 +777,7 @@ void entity_update_all()
 			vector2d_add(entity_manager.ent_list[i].position, entity_manager.ent_list[i].position, entity_manager.ent_list[i].velocity);
 		}
 	}
+	entity_update_all_colliders();
 	check_box_collisions(2, 1);
 	check_box_collisions(4, 1);
 	check_box_collisions(4, 2);

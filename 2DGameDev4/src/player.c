@@ -231,7 +231,7 @@ void player_touch(Entity *self, Entity *other)
 	}
 	if (other->layer == 1)
 	{
-		self->position = self->lastPosition;
+		//self->position = self->lastPosition;
 		//slog("We're hitting something hard");
 		// push us out from the box collider we're hitting
 		selfCenter = vector2d(self->position.x + self->coll->width / 2, self->position.y + self->coll->height / 2);
