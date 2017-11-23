@@ -13,6 +13,18 @@ typedef struct
 
 static WinManager window_manager;
 
+Window *current_window;
+
+void set_current_window(Window *win)
+{
+	current_window = win;
+}
+
+Window *get_current_window()
+{
+	return current_window;
+}
+
 void widget_update_button(Button *button)
 {
 	if (input_get_button(INPUT_BUTTON_SELECT))
@@ -53,21 +65,32 @@ void window_update_generic(Window *self)
 	PriorityNode *cursor;
 	int i;
 	if (!self) return;
+	if (get_current_window() != self) return;
 	if (!self->widgets) return;
 	if (!self->widgets->head) return;
 	cursor = self->widgets->head;
 	if (input_get_axis(INPUT_AXIS_MOVE_Y) > 20000)
 	{
-		self->selectedWidget += 1;
-		if (self->selectedWidget >= self->widgetCount)
-			self->selectedWidget = self->widgetCount - 1;
+		if (self->lastInput <= 0)
+		{
+			self->selectedWidget += 1;
+			if (self->selectedWidget >= self->widgetCount)
+				self->selectedWidget = self->widgetCount - 1;
+		}
+		self->lastInput = 1;
 	}
-	if (input_get_axis(INPUT_AXIS_MOVE_Y) < -20000)
+	else if (input_get_axis(INPUT_AXIS_MOVE_Y) < -20000)
 	{
-		self->selectedWidget -= 1;
-		if (self->selectedWidget < 0)
-			self->selectedWidget = 0;
+		if (self->lastInput >= 0)
+		{
+			self->selectedWidget -= 1;
+			if (self->selectedWidget < 0)
+				self->selectedWidget = 0;
+		}
+		self->lastInput = -1;
 	}
+	else
+		self->lastInput = 0;
 	for (i = 0; i < self->widgetCount; i++)
 	{
 		if (!cursor) return;
@@ -323,6 +346,15 @@ void window_free(Window *win)
 	if (!win)
 		return;
 	win->inUse = false;
+}
+
+void window_close(Window *win)
+{
+	if (!win)
+		return;
+	if (get_current_window() == win)
+		set_current_window(win->parent);
+	window_free(win);
 }
 
 void window_delete(Window *win)

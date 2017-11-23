@@ -38,24 +38,8 @@ void player_init(Entity *self)
 	controller = NULL;
 	joystick = NULL;
 	set_player(self);
-	for (i = 0; i < SDL_NumJoysticks(); ++i) {
-		if (SDL_IsGameController(i)) {
-			slog("Index \'%i\' is a compatible controller, named \'%s\'\n", i, SDL_GameControllerNameForIndex(i));
-			controller = SDL_GameControllerOpen(i);
-		}
-		else {
-			slog("Index \'%i\' is not a compatible controller.\n", i);
-		}
-	}
-	if (!controller)
-		slog("Unable to find a controller..");
-	if (self->coll != NULL)
-	{
-		self->eyePos = vector2d(
-			self->coll->width / 2,
-			self->coll->height / 2);
-	}
 	self->draw = player_draw;
+	vector2d_add(self->eyePos, self->position, vector2d(self->coll->width / 2, self->coll->height / 2));
 }
 
 void player_eat(Entity *self, Vector2D eyePos)
@@ -171,13 +155,13 @@ void player_update(Entity *self)
 	//direction = self->forward;
 	//direction = vector2d_rotate(direction, self->fov * GF2D_PI / -360);
 	self->lastPosition = self->position;
-	if (!controller)
+	/*if (!controller)
 	{
 		SDL_GetMouseState(&mx, &my);
 		self->position = vector2d(mx, my);
 	}
 	else
-	{
+	{*/
 		self->velocity.x = self->moveSpeed * input_get_axis(INPUT_AXIS_MOVE_X) / (double)10000;
 		self->velocity.y = self->moveSpeed * input_get_axis(INPUT_AXIS_MOVE_Y) / (double)10000;
 		self->forward = vector2d(input_get_axis(INPUT_AXIS_FWD_X), input_get_axis(INPUT_AXIS_FWD_Y));
@@ -227,7 +211,7 @@ void player_update(Entity *self)
 				self->moveSpeed *= 2;
 			self->holding = NULL;
 		}
-	}
+	//}
 	//draw_line_of_sight(self, 1, self->fov, direction, vector4d(255,255,70,255), 10, eyePos);
 	self->timer += 1;
 }
@@ -236,6 +220,9 @@ void player_update(Entity *self)
 
 void player_touch(Entity *self, Entity *other)
 {
+	Vector2D selfCenter;
+	Vector2D otherCenter;
+	Vector2D centerDiff;
 	if ((self->timer - self->lastHit > 60)&&(other->layer != 1)&&(other->parent != self))
 	{
 		self->colorShift.x -= 5;
@@ -245,6 +232,79 @@ void player_touch(Entity *self, Entity *other)
 	if (other->layer == 1)
 	{
 		self->position = self->lastPosition;
+		//slog("We're hitting something hard");
+		// push us out from the box collider we're hitting
+		selfCenter = vector2d(self->position.x + self->coll->width / 2, self->position.y + self->coll->height / 2);
+		otherCenter = vector2d(other->position.x + other->coll->width / 2, other->position.y + other->coll->height / 2);
+		gf2d_draw_line(selfCenter, otherCenter, vector4d(255,255,255,255));
+		vector2d_sub(centerDiff, selfCenter, otherCenter);
+
+		if (centerDiff.x > 0)
+		{
+			if (centerDiff.y > 0)
+			{
+				if ((centerDiff.y / centerDiff.x) < (other->coll->height / other->coll->width))
+				{
+					// push us out toward the right side
+					self->position.x = other->position.x + other->coll->width;
+					slog("CASE A");
+				}
+				else
+				{
+					// push us out the bottom
+					self->position.y = other->coll->height + other->position.y;
+					slog("CASE B");
+				}
+			}
+			else
+			{
+				if ((centerDiff.y / centerDiff.x) * -1 < (other->coll->height / other->coll->width))
+				{
+					// push us out toward the right side
+					self->position.x = other->position.x + other->coll->width;
+					slog("CASE C");
+				}
+				else
+				{
+					// push us out the top
+					self->position.y = other->position.y - self->coll->height;
+					slog("CASE D");
+				}
+			}
+		}
+		else
+		{
+			if (centerDiff.y > 0)
+			{
+				if ((centerDiff.y / centerDiff.x) * -1  < (other->coll->height / other->coll->width))
+				{
+					// push us out the left side
+					self->position.x = other->position.x - self->coll->width;
+					slog("CASE E");
+				}
+				else
+				{
+					// push us out the bottom
+					self->position.y = other->position.y + other->coll->height;
+					slog("CASE F");
+				}
+			}
+			else
+			{
+				if ((centerDiff.y / centerDiff.x) < (other->coll->height / other->coll->width))
+				{
+					// push us out the left side
+					self->position.x = other->position.x - self->coll->width;
+					slog("CASE G");
+				}
+				else
+				{
+					// push us out the top
+					self->position.y = other->position.y - self->coll->height;
+					slog("CASE H");
+				}
+			}
+		}
 	}
 }
 

@@ -26,6 +26,7 @@
     <ClCompile Include="..\..\..\..\..\git\gameframework2d-master\src\gf2d_vector.c" />
     <ClCompile Include="..\..\..\..\..\git\gameframework2d-master\src\simple_logger.c" />
     <ClCompile Include="src\audio.c" />
+    <ClCompile Include="src\buttons.c" />
     <ClCompile Include="src\camera.c" />
     <ClCompile Include="src\collision.c" />
     <ClCompile Include="src\config_loader.c" />
@@ -34,6 +35,7 @@
     <ClCompile Include="src\gamestate.c" />
     <ClCompile Include="src\hud.c" />
     <ClCompile Include="src\input.c" />
+    <ClCompile Include="src\main_menu.c" />
     <ClCompile Include="src\map.c" />
     <ClCompile Include="src\pathfinding.c" />
     <ClCompile Include="src\pause.c" />
@@ -54,6 +56,7 @@
     <ClInclude Include="..\..\..\..\..\git\gameframework2d-master\include\gf2d_vector.h" />
     <ClInclude Include="..\..\..\..\..\git\gameframework2d-master\include\simple_logger.h" />
     <ClInclude Include="include\audio.h" />
+    <ClInclude Include="include\buttons.h" />
     <ClInclude Include="include\camera.h" />
     <ClInclude Include="include\collision.h" />
     <ClInclude Include="include\config_loader.h" />
@@ -62,6 +65,7 @@
     <ClInclude Include="include\gamestate.h" />
     <ClInclude Include="include\hud.h" />
     <ClInclude Include="include\input.h" />
+    <ClInclude Include="include\main_menu.h" />
     <ClInclude Include="include\map.h" />
     <ClInclude Include="include\pathfinding.h" />
     <ClInclude Include="include\pause.h" />

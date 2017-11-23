@@ -3,7 +3,7 @@
 
 PlayerInput player_input;
 
-SDL_GameController *controller;
+SDL_GameController *controller = NULL;
 SDL_Joystick *joystick;
 
 // FIXME
@@ -82,7 +82,7 @@ void input_update_frame()
 	// keyboard&mouse controls
 	else
 	{
-
+		//slog("You have no controller.");
 	}
 }
 
@@ -132,4 +132,10 @@ int input_get_axis(int axis)
 	{
 		return NULL;
 	}
+}
+
+Bool input_is_controller()
+{
+	if (!controller) return false;
+	return true;
 }

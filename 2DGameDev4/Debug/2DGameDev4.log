@@ -1,3 +1,16 @@
-﻿  pause.c
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\pause.c(25): warning C4098: 'pause_window_init': 'void' function returning a value
+﻿  player.c
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\player.c(30): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\player.c(37): warning C4101: 'i': unreferenced local variable
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\player.c(51): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\player.c(82): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\player.c(83): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\player.c(100): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\player.c(178): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\player.c(146): warning C4101: 'my': unreferenced local variable
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\player.c(146): warning C4101: 'mx': unreferenced local variable
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\player.c(145): warning C4101: 'projectile': unreferenced local variable
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\player.c(147): warning C4101: 'direction': unreferenced local variable
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\player.c(150): warning C4101: 'dist': unreferenced local variable
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\player.c(149): warning C4101: 'nearestStone': unreferenced local variable
+c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\player.c(151): warning C4101: 'diff': unreferenced local variable
   2DGameDev4.vcxproj -> C:\Users\Brando\Documents\Visual Studio 2015\Projects\2DGameDev4\Debug\2DGameDev4.exe

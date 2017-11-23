@@ -255,7 +255,7 @@ void entity_update_all_colliders()
 				);
 		}
 		// collider line for debugging purposes
-		/*gf2d_draw_line(
+		gf2d_draw_line(
 			entity_manager.ent_list[i].position,
 			entity_manager.ent_list[i].coll->corners[0],
 			vector4d(0, 255, 255, 255));
@@ -270,7 +270,7 @@ void entity_update_all_colliders()
 		gf2d_draw_line(
 			entity_manager.ent_list[i].position,
 			entity_manager.ent_list[i].coll->corners[3],
-			vector4d(255, 255, 255, 255));*/
+			vector4d(255, 255, 255, 255));
 	}
 }
 
@@ -753,12 +753,6 @@ void entity_update_all()
 {
 	int i;
 	entity_update_all_colliders();
-	check_box_collisions(2, 1);
-	check_box_collisions(4, 1);
-	check_box_collisions(4, 2);
-	check_box_collisions(4, 3);
-	check_box_collisions(5, 1);
-	check_box_collisions(6, 1);
 	for (i = 0; i < entity_manager.max_entities; i++)
 	{
 		if (entity_manager.ent_list[i].inUse)
@@ -784,6 +778,12 @@ void entity_update_all()
 			vector2d_add(entity_manager.ent_list[i].position, entity_manager.ent_list[i].position, entity_manager.ent_list[i].velocity);
 		}
 	}
+	check_box_collisions(2, 1);
+	check_box_collisions(4, 1);
+	check_box_collisions(4, 2);
+	check_box_collisions(4, 3);
+	check_box_collisions(5, 1);
+	check_box_collisions(6, 1);
 }
 
 void entity_draw(Entity *ent)

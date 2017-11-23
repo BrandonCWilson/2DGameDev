@@ -12,6 +12,7 @@ typedef struct Button_s
 	void(*onRelease)(struct Button_s *self);
 
 	char *label;
+	char *levelfile;
 
 	Sprite *sprite;
 	int buttonDown;
@@ -67,13 +68,23 @@ typedef struct Window_s
 	PriorityQueueList *widgets;
 	int selectedWidget;
 	int widgetCount;
+
+	int lastInput;
+
+	struct Window_s *parent;
 } Window;
 
 void window_system_init(Uint32 max);
 
+Window *get_current_window();
+
+void set_current_window(Window *win);
+
 Window *window_new();
 
 void window_free(Window *win);
+
+void window_close(Window *win);
 
 void window_update_generic(Window *self);
 

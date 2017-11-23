@@ -1,5 +1,7 @@
 #include "pause.h"
 #include "simple_logger.h"
+#include "main_menu.h"
+#include "buttons.h"
 
 Bool paused = false;
 Window *pause_window;
@@ -7,16 +9,10 @@ Widget pause_widget;
 Widget pause_widget_exit;
 Button pause_button;
 Button pause_button_exit;
-
-void pause_button_exit_released(Button *self)
-{
-	game_set_done_true();
-}
-
-void pause_button_released(Button *self)
-{
-	pause_toggle();
-}
+Widget pause_widget_restart;
+Button pause_button_restart;
+Widget pause_widget_mainmenu;
+Button button_return_to_menu;
 
 void pause_window_init()
 {
@@ -33,32 +29,55 @@ void pause_window_init()
 		slog("Unable to open a font for your window: %s", TTF_GetError());
 	pause_window->update = window_update_generic;
 
+	pause_window->parent = get_current_window();
+
 	pause_window->widgets = pqlist_new();
+	if (!pause_window->widgets) return NULL;
 
 	pqlist_insert(pause_window->widgets, &pause_widget_exit, 1);
 	pause_widget_exit.type = BUTTON_T;
-	pause_widget_exit.dimensions = vector2d(150, 150);
-	pause_widget_exit.position = vector2d(0, 300.5);
+	pause_widget_exit.dimensions = vector2d(200,100);
+	pause_widget_exit.position = vector2d(0, 300);
 	pause_widget_exit.widget.button = &pause_button_exit;
+	pause_window->widgetCount += 1;
+
+	pqlist_insert(pause_window->widgets, &pause_widget_mainmenu, 1);
+	pause_widget_mainmenu.type = BUTTON_T;
+	pause_widget_mainmenu.dimensions = vector2d(200, 100);
+	pause_widget_mainmenu.position = vector2d(0, 200);
+	pause_widget_mainmenu.widget.button = &button_return_to_menu;
+	pause_window->widgetCount += 1;
+
+	pqlist_insert(pause_window->widgets, &pause_widget_restart, 1);
+	pause_widget_restart.type = BUTTON_T;
+	pause_widget_restart.dimensions = vector2d(200, 100);
+	pause_widget_restart.position = vector2d(0, 100);
+	pause_widget_restart.widget.button = &pause_button_restart;
 	pause_window->widgetCount += 1;
 
 	pqlist_insert(pause_window->widgets, &pause_widget, 1);
 	pause_widget.type = BUTTON_T;
-	pause_widget.dimensions = vector2d(300.5, 300.5);
+	pause_widget.dimensions = vector2d(200,100);
 	pause_widget.position = vector2d(0,0);
 	pause_widget.widget.button = &pause_button;
 	pause_window->widgetCount += 1;
 
-	pause_button.onRelease = pause_button_released;
-	pause_button.label = "Pause";
+	pause_button.onRelease = button_toggle_pause;
+	pause_button.label = "Resume Game";
 
-	pause_button_exit.label = "Exit";
-	pause_button_exit.onRelease = pause_button_exit_released;
+	pause_button_exit.label = "Close Game";
+	pause_button_exit.onRelease = button_exit;
+
+	pause_button_restart.label = "Restart";
+	pause_button_restart.onRelease = button_restart_level;
+
+	button_return_to_menu.label = "Return to Main Menu";
+	button_return_to_menu.onRelease = button_return_to_main_menu;
 }
 
 void pause_window_delete()
 {
-	window_free(pause_window);
+	window_close(pause_window);
 }
 
 void pause_toggle()
@@ -73,6 +92,7 @@ void pause_toggle()
 	{
 		// create the window
 		pause_window_init();
+		set_current_window(pause_window);
 	}
 }
 

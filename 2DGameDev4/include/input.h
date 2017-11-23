@@ -42,6 +42,8 @@ Bool input_get_button(int button);
 
 int input_get_axis(int axis);
 
-PlayerInput *input_get();
+Bool input_is_controller();
+
+//PlayerInput *input_get();
 
 #endif
