@@ -359,7 +359,7 @@ void archer_take_damage(Entity *self, int damage)
 		return;
 	self->health -= damage;
 	if (self->ouch != NULL)
-		sound_play(self->ouch, 0, self->ouch->volume, self->ouch->defaultChannel, 0);
+		sound_play(self->ouch, 0, self->ouch->volume, self->ouch->defaultChannel, 0, SOUND_T);
 	if (self->health <= 0)
 	{
 		self->die(self);

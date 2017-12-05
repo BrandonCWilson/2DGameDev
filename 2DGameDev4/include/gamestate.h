@@ -17,4 +17,10 @@ void game_close_map();
 
 Bool game_is_level();
 
+Bool game_is_editing();
+
+void game_start_map_editor();
+
+void game_set_editor_true();
+
 #endif

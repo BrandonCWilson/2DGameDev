@@ -49,7 +49,30 @@ void widget_update_button(Button *button)
 
 void widget_update_slider(Slider *slider)
 {
-
+	if (!slider) return;
+	slider->timer += 1;
+	if (slider->timer - slider->lastMove < slider->moveDelay)
+	{
+		return;
+	}
+	else
+	{
+		slider->lastMove = slider->timer;
+	}
+	if (input_get_axis(INPUT_AXIS_MOVE_X) > 10000)
+	{
+		slider->value += 1;
+		if (slider->value > slider->max)
+			slider->value = slider->max;
+	}
+	else if (input_get_axis(INPUT_AXIS_MOVE_X) < -10000)
+	{
+		slider->value -= 1;
+		if (slider->value < slider->min)
+			slider->value = slider->min;
+	}
+	if (slider->set != NULL)
+		slider->set(slider->value);
 }
 
 void widget_update_generic(Widget *widget)
@@ -148,7 +171,12 @@ void widget_draw_button(Button *button, Vector2D position, Vector2D dimensions, 
 	SDL_Rect Message_rect;
 	SDL_Surface *renderer;
 	if (!button) return;
-	//if (!button->sprite) return;
+	// draw button
+	if (button->sprite != NULL)
+	{
+
+	}
+	// draw text
 	if (font != NULL)
 	{
 		renderer = gf2d_graphics_get_renderer();
@@ -169,6 +197,65 @@ void widget_draw_slider(Slider *slider, Vector2D position, TTF_Font *font)
 {
 	if (!slider) return;
 	if (!slider->sprite) return;
+
+	gf2d_sprite_draw(
+		slider->sprite, 
+		position,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		slider->left
+		);
+	gf2d_sprite_draw(
+		slider->sprite,
+		vector2d(position.x + slider->sprite->frame_w, position.y),
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		slider->middle
+		);
+	gf2d_sprite_draw(
+		slider->sprite,
+		vector2d(position.x + slider->sprite->frame_w * 2, position.y),
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		slider->right
+		);
+	
+	// draw the thing you move along the slider
+	if (slider->max == 0)
+	{
+		gf2d_sprite_draw(
+			slider->sprite,
+			vector2d(position.x, position.y),
+			NULL,
+			NULL,
+			NULL,
+			NULL,
+			NULL,
+			slider->mover
+			);
+	}
+	else
+	{
+		gf2d_sprite_draw(
+			slider->sprite,
+			vector2d(position.x + slider->value * (slider->max - slider->min) / slider->max, position.y),
+			NULL,
+			NULL,
+			NULL,
+			NULL,
+			NULL,
+			slider->mover
+			);
+	}
 }
 
 void widget_draw_generic(Widget *widget, Vector2D position, TTF_Font *font)
@@ -201,7 +288,7 @@ void window_draw_widgets(Window *window)
 		vector2d_add(pos, pos, vector2d(window->sprite->frame_w, window->sprite->frame_h));
 		if (i == window->selectedWidget)
 		{
-			circleRGBA(gf2d_graphics_get_renderer(), pos.x, pos.y, 25, 255, 255, 255, 255);
+			circleRGBA(gf2d_graphics_get_renderer(), pos.x, pos.y, 50, 255, 255, 255, 255);
 		}
 		widget_draw_generic(cursor->data, pos, window->font);
 		cursor = cursor->next;

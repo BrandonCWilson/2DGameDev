@@ -10,6 +10,7 @@ typedef struct PlayerInput_s
 	Bool select;
 	Bool pull;
 	Bool melee;
+	Bool hurt_self;
 
 	double move_x;
 	double move_y;
@@ -23,7 +24,8 @@ typedef enum Input_Button_s
 	INPUT_BUTTON_SELECT,
 	INPUT_BUTTON_MELEE,
 	INPUT_BUTTON_CHARGE,
-	INPUT_BUTTON_PULL
+	INPUT_BUTTON_PULL,
+	INPUT_HURT_SELF
 } Input_Button;
 
 typedef enum Input_Axis_s

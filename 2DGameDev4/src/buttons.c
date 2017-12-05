@@ -2,11 +2,23 @@
 #include "gamestate.h"
 #include "pause.h"
 #include "simple_logger.h"
+#include "map_editor.h"
 
 void button_return_to_main_menu(Button *self)
 {
+	if (game_is_editing())
+	{
+		map_editor_close();
+	}
 	game_close_map();
 	pause_toggle();
+	main_menu_toggle();
+}
+
+void button_start_map_editor(Button *self)
+{
+	slog("I'd like to start the map editor!");
+	game_start_map_editor();
 	main_menu_toggle();
 }
 

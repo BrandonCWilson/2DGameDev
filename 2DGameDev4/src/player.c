@@ -28,8 +28,7 @@ void player_draw(Entity *self)
 	vector2d_add(eyePos, self->position, self->eyePos);
 	direction = self->forward;
 	direction = vector2d_rotate(direction, self->fov * GF2D_PI / -360);
-
-	draw_line_of_sight(self, 1, self->fov, direction, vector4d(255, 255, 70, 255), 10, eyePos);
+	draw_line_of_sight(self, 1, self->fov, direction, vector4d(255, 255, 70, 255), 15, eyePos);
 }
 
 void player_init(Entity *self)
@@ -152,6 +151,9 @@ void player_update(Entity *self)
 
 	vector2d_add(eyePos, self->position, self->eyePos);
 
+	if (input_get_button(INPUT_HURT_SELF) == true)
+		player_take_damage(self, 1);
+
 	//direction = self->forward;
 	//direction = vector2d_rotate(direction, self->fov * GF2D_PI / -360);
 	self->lastPosition = self->position;
@@ -223,12 +225,6 @@ void player_touch(Entity *self, Entity *other)
 	Vector2D selfCenter;
 	Vector2D otherCenter;
 	Vector2D centerDiff;
-	if ((self->timer - self->lastHit > 60)&&(other->layer != 1)&&(other->parent != self))
-	{
-		self->colorShift.x -= 5;
-		self->lastHit = self->timer;
-		sound_play(self->ouch, 0, self->ouch->volume, self->ouch->defaultChannel, 0);
-	}
 	if (other->layer == 1)
 	{
 		//self->position = self->lastPosition;
@@ -236,7 +232,7 @@ void player_touch(Entity *self, Entity *other)
 		// push us out from the box collider we're hitting
 		selfCenter = vector2d(self->position.x + self->coll->width / 2, self->position.y + self->coll->height / 2);
 		otherCenter = vector2d(other->position.x + other->coll->width / 2, other->position.y + other->coll->height / 2);
-		gf2d_draw_line(selfCenter, otherCenter, vector4d(255,255,255,255));
+		//gf2d_draw_line(selfCenter, otherCenter, vector4d(255,255,255,255));
 		vector2d_sub(centerDiff, selfCenter, otherCenter);
 
 		if (centerDiff.x > 0)
@@ -247,13 +243,13 @@ void player_touch(Entity *self, Entity *other)
 				{
 					// push us out toward the right side
 					self->position.x = other->position.x + other->coll->width;
-					slog("CASE A");
+					//slog("CASE A");
 				}
 				else
 				{
 					// push us out the bottom
 					self->position.y = other->coll->height + other->position.y;
-					slog("CASE B");
+					//slog("CASE B");
 				}
 			}
 			else
@@ -262,13 +258,13 @@ void player_touch(Entity *self, Entity *other)
 				{
 					// push us out toward the right side
 					self->position.x = other->position.x + other->coll->width;
-					slog("CASE C");
+					//slog("CASE C");
 				}
 				else
 				{
 					// push us out the top
 					self->position.y = other->position.y - self->coll->height;
-					slog("CASE D");
+					//slog("CASE D");
 				}
 			}
 		}
@@ -280,13 +276,13 @@ void player_touch(Entity *self, Entity *other)
 				{
 					// push us out the left side
 					self->position.x = other->position.x - self->coll->width;
-					slog("CASE E");
+					//slog("CASE E");
 				}
 				else
 				{
 					// push us out the bottom
 					self->position.y = other->position.y + other->coll->height;
-					slog("CASE F");
+					//slog("CASE F");
 				}
 			}
 			else
@@ -295,13 +291,13 @@ void player_touch(Entity *self, Entity *other)
 				{
 					// push us out the left side
 					self->position.x = other->position.x - self->coll->width;
-					slog("CASE G");
+					//slog("CASE G");
 				}
 				else
 				{
 					// push us out the top
 					self->position.y = other->position.y - self->coll->height;
-					slog("CASE H");
+					//slog("CASE H");
 				}
 			}
 		}
@@ -310,10 +306,18 @@ void player_touch(Entity *self, Entity *other)
 
 void player_take_damage(Entity *self, int damage)
 {
-	self->health -= damage;
-	slog("player health: %i %i", player->maxHealth, player->health);
-	if (self->health <= 0)
-		self->die(self);
+	if (!self) return;
+	if (self->timer - self->lastHit > 60)
+	{
+		self->colorShift.x -= 5;
+		self->lastHit = self->timer;
+		sound_play(self->ouch, 0, self->ouch->volume, self->ouch->defaultChannel, 0, SOUND_T);
+
+		self->health -= damage;
+		//slog("player health: %i %i", player->maxHealth, player->health);
+		if (self->health <= 0)
+			self->die(self);
+	}
 }
 
 void player_die(Entity *self)

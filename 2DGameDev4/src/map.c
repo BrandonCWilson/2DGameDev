@@ -14,9 +14,97 @@ void set_current_tilemap(TileMap *map)
 	currentmap = map;
 }
 
+TileMap *tilemap_new()
+{
+	TileMap *tilemap = NULL;
+	tilemap = (TileMap *)malloc(sizeof(TileMap));
+	if (!tilemap)
+	{
+		slog("failed to allocate tile map data");
+		return NULL;
+	}
+	memset(tilemap, 0, sizeof(TileMap));
+	return tilemap;
+}
+
 TileMap *get_current_tilemap()
 {
 	return currentmap;
+}
+
+void tilemap_shrink(TileMap *tilemap)
+{
+
+}
+
+void tilemap_expand(TileMap *tilemap, int right, int down)
+{
+	char *new_map;
+	int new_height, new_width;
+	int i, j;
+	int tilePos;
+	int x, y;
+	if (!tilemap) return;
+	new_map = tilemap_new();
+	if (!new_map) return;
+
+	slog("Expanding tilemap!");
+
+	// establish the new dimensions of the tilemap
+	new_height = tilemap->height + down;
+	new_width = tilemap->width + right;
+
+	if ((down < 0) || (right < 0))
+		slog("Shrinking the map!");
+
+	if (new_height <= 0)
+		new_height = 1;
+	if (new_width <= 0)
+		new_width = 1;
+
+	// allocate space for the new tilemap's contents
+	new_map = (char *)malloc(sizeof(char)*new_width*new_height + 1);
+	if (!new_map) return;
+	memset(new_map, 0, sizeof(char) * (new_width * new_height + 1));
+
+	// copy over the old tilemap's contents
+	slog("Old map! %s", tilemap->map);
+	for (j = 0; j < new_height; j++)
+	{
+		for (i = 0; i < new_width; i++)
+		{
+			new_map[j * new_width + i] = '0';
+		}
+	}
+	slog("Max memory address: %i", new_width*new_height + 1);
+	for (j = 0; j < tilemap->height; j++)
+	{
+		for (i = 0; i < tilemap->width; i++)
+		{
+			//slog("Memory address: %i", j * tilemap->width + i);
+			if (i >= new_width || j >= new_height)
+			{
+				continue;
+			}
+			if (j * new_width + i >= new_width*new_height)
+			{
+				slog("Address is too big!");
+				continue;
+			}
+			slog("Writing to memory %i", j * new_width + i);
+			new_map[j * new_width + i] = tilemap->map[j * tilemap->width + i];
+		}
+	}
+
+	slog("New map! %s", new_map);
+	slog("Free the map!");
+	// free the old tilemap, and refresh the current tilemap
+	free(tilemap->map);
+	slog("Tilemap free!");
+	tilemap->map = new_map;
+	tilemap->height = new_height;
+	tilemap->width = new_width;
+	slog("Finished expanding tilemap!");
 }
 
 void tilemap_free(TileMap *tilemap)
@@ -136,13 +224,12 @@ TileMap *tilemap_load(char *filename, Vector2D position)
 		slog("failed to open file %s", filename);
 		return NULL;
 	}
-	tilemap = (TileMap *)malloc(sizeof(TileMap));
+	tilemap = tilemap_new();
 	if (!tilemap)
 	{
-		slog("failed to allocate tile map data");
+		slog("failed to create a new tilemap");
 		return NULL;
 	}
-	memset(tilemap, 0, sizeof(TileMap));
 	while (fscanf(file, "%s", buffer) != EOF)
 	{
 		if (strcmp(buffer, "width:") == 0)

@@ -24,12 +24,17 @@ typedef struct Slider_s
 	int min;
 	int max;
 	int value;
+	void(*set)(int value);
 
 	char *label;
 
 	Sprite *sprite;
 	int left, middle, right;
 	int mover;
+
+	int lastMove;
+	int moveDelay;
+	int timer;
 } Slider;
 
 typedef enum

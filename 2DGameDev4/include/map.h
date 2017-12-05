@@ -31,4 +31,8 @@ void tilemap_load_walls(TileMap *tilemap, Vector2D position);
 TileMap *get_current_tilemap();
 
 void tilemap_free(TileMap *tilemap);
+
+void tilemap_shrink(TileMap *tilemap);
+
+void tilemap_expand(TileMap *tilemap, int right, int down);
 #endif

@@ -259,14 +259,14 @@ void entity_update_all_colliders()
 			entity_manager.ent_list[i].position,
 			entity_manager.ent_list[i].coll->corners[0],
 			vector4d(0, 255, 255, 255));
-		gf2d_draw_line(
+		/*gf2d_draw_line(
 			entity_manager.ent_list[i].position,
 			entity_manager.ent_list[i].coll->corners[1],
 			vector4d(255, 0, 255, 255));
 		gf2d_draw_line(
 			entity_manager.ent_list[i].position,
 			entity_manager.ent_list[i].coll->corners[2],
-			vector4d(255, 255, 0, 255));
+			vector4d(255, 255, 0, 255));*/
 		gf2d_draw_line(
 			entity_manager.ent_list[i].position,
 			entity_manager.ent_list[i].coll->corners[3],
@@ -405,8 +405,14 @@ void connect_to_walls(RaycastHit *hit, Entity *self, float fwdMag, Vector2D forw
 	float tmpAngle;
 	if (hit->other != NULL)
 	{
-		if ((hit->hitpoint.x > hit->other->corners[3].x) && (hit->hitpoint.x < hit->other->corners[0].x))
+		//gf2d_draw_circle(hit->hitpoint, 15, vector4d(0, 0, 255, 255));
+		if ((hit->hitpoint.x > hit->other->corners[3].x) && (hit->hitpoint.x < hit->other->corners[0].x)
+			// evidently I'm having accuracy issues somewhere else. This gives it enough room to make the right choice, but the decimal can be adjusted.
+			&&(hit->other->corners[0].x - hit->hitpoint.x > 0.1))
 		{
+			gf2d_draw_circle(hit->hitpoint, 15, vector4d(0, 0, 0, 255));
+			if (hit->other->corners[0].x - hit->hitpoint.x < 0.1)
+				slog("It's pretty close though");
 			if (eyePos.x >= hit->hitpoint.x)
 			{
 				if (FindLineCircleIntersections(
@@ -426,6 +432,7 @@ void connect_to_walls(RaycastHit *hit, Entity *self, float fwdMag, Vector2D forw
 				{
 					return;
 				}
+
 			}
 			hit = raycast_through_all_entities(eyePos, intersection1, 1); if (!hit)
 				return;
@@ -442,6 +449,7 @@ void connect_to_walls(RaycastHit *hit, Entity *self, float fwdMag, Vector2D forw
 				hit->hitpoint = intersection1;
 				vector2d_sub(hitdiff, intersection1, eyePos);
 				pqlist_insert(pts, hit, acos(vector2d_dot_product(hitdiff, forward) / (vector2d_magnitude(hitdiff)*fwdMag)));
+
 			}
 			else
 			{
@@ -452,6 +460,7 @@ void connect_to_walls(RaycastHit *hit, Entity *self, float fwdMag, Vector2D forw
 		{
 			if (eyePos.y >= hit->hitpoint.y)
 			{
+				gf2d_draw_line(eyePos, hit->hitpoint, vector4d(255, 0, 0, 255));
 				if (FindLineCircleIntersections(
 					eyePos.x, eyePos.y, fwdMag,
 					hit->hitpoint, vector2d(hit->hitpoint.x, hit->hitpoint.y - fwdMag * 2),
@@ -467,6 +476,7 @@ void connect_to_walls(RaycastHit *hit, Entity *self, float fwdMag, Vector2D forw
 					return;
 			}
 
+			//gf2d_draw_circle(intersection1, 10, vector4d(0, 255, 0, 255));
 			hit = raycast_through_all_entities(eyePos, intersection1, 1); if (!hit)
 				return;
 			vector2d_sub(dir, intersection1, eyePos);
@@ -482,12 +492,17 @@ void connect_to_walls(RaycastHit *hit, Entity *self, float fwdMag, Vector2D forw
 				hit->hitpoint = intersection1;
 				vector2d_sub(hitdiff, intersection1, eyePos);
 				pqlist_insert(pts, hit, acos(vector2d_dot_product(hitdiff, forward) / (vector2d_magnitude(hitdiff)*fwdMag)));
+				//gf2d_draw_circle(intersection1, 25, vector4d(255, 255, 255, 255));
 			}
 			else
 			{
 				raycasthit_free(hit);
 			}
 		}
+	}
+	else
+	{
+		//gf2d_draw_circle(hit->hitpoint, 25, vector4d(255, 0, 0, 255));
 	}
 }
 
@@ -620,6 +635,8 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward, V
 	{
 		x[i] = (Sint16)hit->hitpoint.x;
 		y[i] = (Sint16)hit->hitpoint.y;
+		// Debugging
+		gf2d_draw_line(eyePos, vector2d(x[i], y[i]), vector4d(255,255,255,255));
 		raycasthit_free(hit);
 		i++;
 	}
@@ -769,7 +786,7 @@ void entity_update_all()
 			{
 				// no sprite ..
 			}
-			else
+			else if (!entity_manager.ent_list[i].singleFrame)
 			{
 				entity_manager.ent_list[i].frame += 0.1;
 				if (entity_manager.ent_list[i].frame > entity_manager.ent_list[i].sprite->frames_per_line)entity_manager.ent_list[i].frame = 0;

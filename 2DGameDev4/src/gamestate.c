@@ -1,9 +1,11 @@
 #include "gamestate.h"
 #include "simple_logger.h"
 #include "input.h"
+#include "map_editor.h"
 
 Bool done = false;
 Bool is_level = false;
+Bool is_editing = false;
 
 Bool game_done()
 {
@@ -13,6 +15,24 @@ Bool game_done()
 void game_set_done_true()
 {
 	done = true;
+}
+
+void game_set_editor_true()
+{
+	is_editing = true;
+}
+
+Bool game_is_editing()
+{
+	return is_editing;
+}
+
+void game_start_map_editor()
+{
+	game_load_map("editor/base_level.map");
+	slog("Okay, we're loading the base map editor level!");
+	game_set_editor_true();
+	map_editor_init();
 }
 
 void game_load_map(char *map)

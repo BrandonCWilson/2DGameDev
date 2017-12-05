@@ -1,6 +1,10 @@
 #include "audio.h"
 #include "simple_logger.h"
 
+float volume_master = 1.0;
+float volume_sound = 10.0;
+float volume_music = 10.0;
+
 typedef struct
 {
 	int max_sounds;
@@ -12,6 +16,36 @@ SoundManager sound_manager;
 void audio_close()
 {
 	slog("audio system closed");
+}
+
+void audio_set_master_volume(float volume)
+{
+	volume_master = volume;
+}
+
+void audio_set_music_volume(float volume)
+{
+	volume_music = volume;
+}
+
+void audio_set_sound_volume(float volume)
+{
+	volume_sound = volume;
+}
+
+float audio_get_master_volume()
+{
+	return volume_master;
+}
+
+float audio_get_music_volume()
+{
+	return volume_music;
+}
+
+float audio_get_sound_volume()
+{
+	return volume_sound;
 }
 
 void sound_delete(Sound *sound)
@@ -160,7 +194,7 @@ Sound *sound_load(char *filename, float volume, int defaultChannel)
 	return sound;
 }
 
-void sound_play(Sound *sound, int loops, float volume, int channel, int group)
+void sound_play(Sound *sound, int loops, float volume, int channel, int group, AUDIO_T type)
 {
 	int chan;
 	float netVolume = 1;
@@ -168,6 +202,12 @@ void sound_play(Sound *sound, int loops, float volume, int channel, int group)
 	if (volume > 0)
 	{
 		netVolume *= volume;
+		if ((type == MUSIC_T)&&(audio_get_music_volume() > 0))
+			netVolume *= audio_get_music_volume();
+		if ((type == SOUND_T)&&(audio_get_sound_volume() > 0))
+			netVolume *= audio_get_sound_volume();
+		if (audio_get_master_volume > 0)
+			netVolume *= audio_get_master_volume();
 	}
 	if (channel >= 0)
 	{
@@ -177,7 +217,8 @@ void sound_play(Sound *sound, int loops, float volume, int channel, int group)
 	{
 		chan = sound->defaultChannel;
 	}
+	netVolume /= 10000;
+	slog("Net Volume: %f", netVolume);
 	Mix_VolumeChunk(sound->sound, (int)(netVolume * MIX_MAX_VOLUME));
 	Mix_PlayChannel(chan, sound->sound, loops);
-
 }

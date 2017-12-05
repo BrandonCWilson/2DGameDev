@@ -10,6 +10,7 @@ SDL_Joystick *joystick;
 // support non-axis controller bindings for charge and pull
 int CONTROLLER_SELECT = SDL_CONTROLLER_BUTTON_A;
 int CONTROLLER_MELEE = SDL_CONTROLLER_BUTTON_X;
+int CONTROLLER_HURT_SELF = SDL_CONTROLLER_BUTTON_B;
 int CONTROLLER_CHARGE = SDL_CONTROLLER_AXIS_TRIGGERRIGHT;
 int CONTROLLER_PULL = SDL_CONTROLLER_AXIS_TRIGGERLEFT;
 
@@ -62,6 +63,10 @@ void input_update_frame()
 		{
 			player_input.melee = true;
 		}
+		if (SDL_GameControllerGetButton(controller, CONTROLLER_HURT_SELF))
+		{
+			player_input.hurt_self = true;
+		}
 		// FIXME
 		// support non-axis controller bindings for charge and pull
 		if (SDL_GameControllerGetAxis(controller, CONTROLLER_PULL) > 1000)
@@ -103,6 +108,10 @@ Bool input_get_button(int button)
 	else if (button == INPUT_BUTTON_PULL)
 	{
 		return player_input.pull;
+	}
+	else if (button == INPUT_HURT_SELF)
+	{
+		return player_input.hurt_self;
 	}
 	else
 	{

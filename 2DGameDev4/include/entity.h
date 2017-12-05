@@ -85,6 +85,7 @@ typedef struct Entity_s
 	int lastHit;
 	Sprite *sprite;
 	float frame;
+	Bool singleFrame;
 	Vector4D colorShift;
 } Entity;
 

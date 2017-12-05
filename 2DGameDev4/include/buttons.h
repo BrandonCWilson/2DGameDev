@@ -13,4 +13,6 @@ void button_restart_level(Button *self);
 
 void button_start_level(Button *self);
 
+void button_start_map_editor(Button *self);
+
 #endif
