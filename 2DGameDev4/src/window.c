@@ -25,6 +25,49 @@ Window *get_current_window()
 	return current_window;
 }
 
+void widget_update_scroll(Scroll *scroll)
+{
+	scroll->timer += 1;
+	if (input_get_button(INPUT_BUTTON_SELECT))
+	{
+		scroll->pressed = true;
+	}
+	else
+	{
+		if (scroll->pressed == true)
+		{
+			slog("Scroll released.");
+			if (scroll->onRelease != NULL)
+				scroll->onRelease(scroll);
+			else
+				slog("No onrelease function");
+			slog("Onrelease");
+		}
+		scroll->pressed = false;
+	}
+
+	if (scroll->timer - scroll->lastMove < scroll->moveDelay)
+	{
+		return;
+	}
+	else
+	{
+		scroll->lastMove = scroll->timer;
+	}
+	if (input_get_axis(INPUT_AXIS_MOVE_X) > 10000)
+	{
+		scroll->currentOption += 1;
+		if (scroll->currentOption >= pqlist_get_size(scroll->optionsList))
+			scroll->currentOption -= 1;
+	}
+	else if (input_get_axis(INPUT_AXIS_MOVE_X) < -10000)
+	{
+		scroll->currentOption -= 1;
+		if (scroll->currentOption < 0)
+			scroll->currentOption = 0;
+	}
+}
+
 void widget_update_button(Button *button)
 {
 	if (input_get_button(INPUT_BUTTON_SELECT))
@@ -80,6 +123,7 @@ void widget_update_generic(Widget *widget)
 	if (!widget) return;
 	if (widget->type == BUTTON_T) widget_update_button(widget->widget.button);
 	if (widget->type == SLIDER_T) widget_update_slider(widget->widget.slider);
+	if (widget->type == SCROLL_T) widget_update_scroll(widget->widget.scroll);
 }
 
 void window_update_generic(Window *self)
@@ -160,6 +204,47 @@ void window_update_all()
 			if (window_manager.win_list[i].update != NULL)
 				window_manager.win_list[i].update(&window_manager.win_list[i]);
 		}
+	}
+}
+
+void widget_draw_scroll(Scroll *scroll, Vector2D position, Vector2D dimensions, TTF_Font *font)
+{
+	SDL_Color White = { 255, 255, 255 };
+	SDL_Surface *surfaceMessage;
+	SDL_Texture *message;
+	SDL_Rect Message_rect;
+	SDL_Surface *renderer;
+	int i;
+	PriorityNode *cursor;
+
+	if (!scroll) return;
+
+	if (scroll->sprite != NULL)
+	{
+
+	}
+
+	// draw text
+	// inefficient to look this up every frame. I should really store the current text somewhere
+	// but this is a base solution
+	i = 0;
+	for (cursor = scroll->optionsList->head; cursor != NULL; cursor = cursor->next)
+	{
+		if (i == scroll->currentOption)
+		{
+			renderer = gf2d_graphics_get_renderer();
+			surfaceMessage = TTF_RenderText_Solid(font, cursor->data, White);
+			message = SDL_CreateTextureFromSurface(renderer, surfaceMessage);
+			Message_rect.x = position.x;
+			Message_rect.y = position.y;
+			Message_rect.w = dimensions.x;
+			Message_rect.h = dimensions.y;
+
+			SDL_RenderCopy(renderer, message, NULL, &Message_rect);
+		}
+		else if (i > scroll->currentOption)
+			break;
+		i++;
 	}
 }
 
@@ -265,6 +350,8 @@ void widget_draw_generic(Widget *widget, Vector2D position, TTF_Font *font)
 		widget_draw_button(widget->widget.button, position, widget->dimensions, font);
 	if (widget->type == SLIDER_T)
 		widget_draw_slider(widget->widget.slider, position, font);
+	if (widget->type == SCROLL_T)
+		widget_draw_scroll(widget->widget.scroll, position, widget->dimensions, font);
 }
 
 void window_draw_widgets(Window *window)

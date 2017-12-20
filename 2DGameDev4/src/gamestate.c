@@ -12,6 +12,16 @@ Bool game_done()
 	return done;
 }
 
+void game_win()
+{
+	
+}
+
+void game_lose()
+{
+
+}
+
 void game_set_done_true()
 {
 	done = true;

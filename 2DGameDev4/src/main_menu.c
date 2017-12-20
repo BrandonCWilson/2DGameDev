@@ -2,10 +2,16 @@
 #include "simple_logger.h"
 #include "input.h"
 #include "buttons.h"
+#include <physfs.h>
+#include "config_loader.h"
+#include "scrolls.h"
 
 Bool is_open = false;
 
 Window *win = NULL;
+
+Widget menu_level_select;
+Scroll scroll_level_select;
 
 Widget menu_start_level;
 Button button_level1;
@@ -19,6 +25,7 @@ Button button_map_editor;
 void main_menu_init()
 {
 	Window *menu = NULL;
+	SDL_RWops *rw;
 	menu = window_new();
 	if (!menu) return NULL;
 	win = menu;
@@ -28,7 +35,12 @@ void main_menu_init()
 	menu->height = 500;
 	menu->position = vector2d(350, 100);
 	menu->label = "Testing.";
-	menu->font = TTF_OpenFont("fonts/BradleyGratis.ttf", 32);
+	if ((rw = PHYSFSRWOPS_openRead("fonts/BradleyGratis.ttf")) == NULL)
+	{
+		slog("Could not load font for pause window.");
+		return NULL;
+	}
+	menu->font = TTF_OpenFontRW(rw, 1, 32);
 	if (menu->font == NULL)
 		slog("Unable to open a font for your window: %s", TTF_GetError());
 	menu->update = window_update_generic;
@@ -50,6 +62,13 @@ void main_menu_init()
 	menu_exit.position = vector2d(0, 150);
 	menu->widgetCount += 1;
 
+	pqlist_insert(menu->widgets, &menu_level_select, 1);
+	menu_level_select.type = SCROLL_T;
+	menu_level_select.widget.button = &scroll_level_select;
+	menu_level_select.dimensions = vector2d(200, 75);
+	menu_level_select.position = vector2d(0, 75);
+	menu->widgetCount += 1;
+
 	pqlist_insert(menu->widgets, &menu_start_level, 1);
 	menu_start_level.type = BUTTON_T;
 	menu_start_level.widget.button = &button_level1;
@@ -66,6 +85,10 @@ void main_menu_init()
 
 	button_map_editor.label = "Map Editor";
 	button_map_editor.onRelease = button_start_map_editor;
+
+	scroll_level_select.optionsList = level_list_get();
+	scroll_level_select.onRelease = scroll_start_level;
+	scroll_level_select.moveDelay = 20;
 
 	is_open = true;
 }

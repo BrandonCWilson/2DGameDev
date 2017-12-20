@@ -6,6 +6,7 @@
 #include <float.h>
 #include <SDL2_gfxPrimitives.h>
 #include "gf2d_graphics.h"
+#include "player.h"
 
 typedef struct
 {
@@ -15,11 +16,37 @@ typedef struct
 
 static EntManager entity_manager;
 
+void entity_alert_within_radius(Vector2D center, double radius)
+{
+	int i;
+	double radSquared = radius * radius;
+	Vector2D vec;
+
+	for (i = 0; i < entity_manager.max_entities; i++)
+	{
+		if (entity_manager.ent_list[i].inUse)
+		{
+			if (entity_manager.ent_list[i].notice_sound != NULL)
+			{
+				vector2d_add(vec, entity_manager.ent_list[i].eyePos, entity_manager.ent_list[i].position);
+				vector2d_sub(vec, center, vec);
+				if (vector2d_magnitude_squared(vec) <= radSquared)
+				{
+					entity_manager.ent_list[i].notice_sound(&entity_manager.ent_list[i], center);
+				}
+			}
+		}
+	}
+}
+
 void entity_draw_health_bars()
 {
 	int i;
 	double x[3], y[3];
+	double offsetX, offsetY;
 	Vector2D hpPos;
+	offsetX = (get_player() == NULL ? 0 : get_player()->position.x - 600);
+	offsetY = (get_player() == NULL ? 0 : get_player()->position.y - 360);
 	for (i = 0; i < entity_manager.max_entities; i++)
 	{
 		if (entity_manager.ent_list[i].inUse == false)
@@ -29,8 +56,8 @@ void entity_draw_health_bars()
 		if (entity_manager.ent_list[i].sprite == NULL)
 			continue;
 		hpPos = vector2d(
-			entity_manager.ent_list[i].position.x + entity_manager.ent_list[i].spriteOffset.x + entity_manager.ent_list[i].sprite->frame_w / 2,
-			entity_manager.ent_list[i].position.y + entity_manager.ent_list[i].spriteOffset.y + entity_manager.ent_list[i].sprite->frame_h + 5
+			entity_manager.ent_list[i].position.x + entity_manager.ent_list[i].spriteOffset.x - offsetX + entity_manager.ent_list[i].sprite->frame_w / 2,
+			entity_manager.ent_list[i].position.y + entity_manager.ent_list[i].spriteOffset.y - offsetY + entity_manager.ent_list[i].sprite->frame_h + 5
 			);
 		x[0] = hpPos.x - entity_manager.ent_list[i].sprite->frame_w * 0.75; y[0] = hpPos.y;
 		x[2] = hpPos.x + entity_manager.ent_list[i].sprite->frame_w * 0.75; y[2] = hpPos.y + 5;
@@ -255,22 +282,22 @@ void entity_update_all_colliders()
 				);
 		}
 		// collider line for debugging purposes
-		gf2d_draw_line(
+		/*gf2d_draw_line(
 			entity_manager.ent_list[i].position,
 			entity_manager.ent_list[i].coll->corners[0],
 			vector4d(0, 255, 255, 255));
-		/*gf2d_draw_line(
+		gf2d_draw_line(
 			entity_manager.ent_list[i].position,
 			entity_manager.ent_list[i].coll->corners[1],
 			vector4d(255, 0, 255, 255));
 		gf2d_draw_line(
 			entity_manager.ent_list[i].position,
 			entity_manager.ent_list[i].coll->corners[2],
-			vector4d(255, 255, 0, 255));*/
+			vector4d(255, 255, 0, 255));
 		gf2d_draw_line(
 			entity_manager.ent_list[i].position,
 			entity_manager.ent_list[i].coll->corners[3],
-			vector4d(255, 255, 255, 255));
+			vector4d(255, 255, 255, 255));*/
 	}
 }
 
@@ -410,7 +437,7 @@ void connect_to_walls(RaycastHit *hit, Entity *self, float fwdMag, Vector2D forw
 			// evidently I'm having accuracy issues somewhere else. This gives it enough room to make the right choice, but the decimal can be adjusted.
 			&&(hit->other->corners[0].x - hit->hitpoint.x > 0.1))
 		{
-			gf2d_draw_circle(hit->hitpoint, 15, vector4d(0, 0, 0, 255));
+			//gf2d_draw_circle(hit->hitpoint, 15, vector4d(0, 0, 0, 255));
 			if (hit->other->corners[0].x - hit->hitpoint.x < 0.1)
 				slog("It's pretty close though");
 			if (eyePos.x >= hit->hitpoint.x)
@@ -460,7 +487,7 @@ void connect_to_walls(RaycastHit *hit, Entity *self, float fwdMag, Vector2D forw
 		{
 			if (eyePos.y >= hit->hitpoint.y)
 			{
-				gf2d_draw_line(eyePos, hit->hitpoint, vector4d(255, 0, 0, 255));
+				//gf2d_draw_line(eyePos, hit->hitpoint, vector4d(255, 0, 0, 255));
 				if (FindLineCircleIntersections(
 					eyePos.x, eyePos.y, fwdMag,
 					hit->hitpoint, vector2d(hit->hitpoint.x, hit->hitpoint.y - fwdMag * 2),
@@ -626,17 +653,17 @@ void draw_line_of_sight(Entity *self, int layer, double fov, Vector2D forward, V
 		return;
 	}
 	memset(x, 0, sizeof(Sint16)*(numPoints)); memset(y, 0, sizeof(Sint16)*(numPoints));
-	x[0] = eyePos.x;
-	y[0] = eyePos.y;
-	x[1] = endHitpoint.x;
-	y[1] = endHitpoint.y;
+	x[0] = eyePos.x - (get_player() == NULL ? 0 : get_player()->position.x - 600);
+	y[0] = eyePos.y - (get_player() == NULL ? 0 : get_player()->position.y - 360);
+	x[1] = endHitpoint.x - (get_player() == NULL ? 0 : get_player()->position.x - 600);
+	y[1] = endHitpoint.y - (get_player() == NULL ? 0 : get_player()->position.y - 360);
 	i = 2;
 	for (hit = pqlist_delete_max(pts); hit != NULL; hit = pqlist_delete_max(pts))
 	{
-		x[i] = (Sint16)hit->hitpoint.x;
-		y[i] = (Sint16)hit->hitpoint.y;
+		x[i] = (Sint16)hit->hitpoint.x - (get_player() == NULL ? 0 : get_player()->position.x - 600);
+		y[i] = (Sint16)hit->hitpoint.y - (get_player() == NULL ? 0 : get_player()->position.y - 360);
 		// Debugging
-		gf2d_draw_line(eyePos, vector2d(x[i], y[i]), vector4d(255,255,255,255));
+		//gf2d_draw_line(eyePos, vector2d(x[i], y[i]), vector4d(255,255,255,255));
 		raycasthit_free(hit);
 		i++;
 	}
@@ -769,6 +796,7 @@ void entity_free(Entity *ent)
 void entity_update_all()
 {
 	int i;
+	Animation *animation;
 	for (i = 0; i < entity_manager.max_entities; i++)
 	{
 		if (entity_manager.ent_list[i].inUse)
@@ -789,7 +817,16 @@ void entity_update_all()
 			else if (!entity_manager.ent_list[i].singleFrame)
 			{
 				entity_manager.ent_list[i].frame += 0.1;
-				if (entity_manager.ent_list[i].frame > entity_manager.ent_list[i].sprite->frames_per_line)entity_manager.ent_list[i].frame = 0;
+				if (entity_manager.ent_list[i].animator != NULL)
+				{
+					animation = (Animation *)hashmap_get_value(entity_manager.ent_list[i].currentAnimation, entity_manager.ent_list[i].animator->animations);
+					if (animation != NULL)
+					{
+						if (entity_manager.ent_list[i].frame > animation->endFrame)
+							entity_manager.ent_list[i].frame = animation->startFrame;
+					}
+				}
+				else if (entity_manager.ent_list[i].frame > entity_manager.ent_list[i].sprite->frames_per_line)entity_manager.ent_list[i].frame = 0;
 			}
 			vector2d_add(entity_manager.ent_list[i].position, entity_manager.ent_list[i].position, entity_manager.ent_list[i].velocity);
 		}
@@ -808,15 +845,28 @@ void entity_draw(Entity *ent)
 	if (!ent)
 		return;
 
-	gf2d_sprite_draw(
-		ent->sprite,
-		vector2d(ent->position.x + ent->spriteOffset.x, ent->position.y + ent->spriteOffset.y),
-		&ent->scale,
-		NULL,
-		NULL,
-		NULL,
-		&ent->colorShift,
-		(int)ent->frame);
+	if (ent != get_player())
+		gf2d_sprite_draw(
+			ent->sprite,
+			vector2d(ent->position.x + ent->spriteOffset.x - (get_player() == NULL ? 0 : get_player()->position.x - 600),
+				ent->position.y + ent->spriteOffset.y - (get_player() == NULL ? 0 : get_player()->position.y - 360)),
+			&ent->scale,
+			NULL,
+			NULL,
+			NULL,
+			&ent->colorShift,
+			(int)ent->frame);
+	else
+		gf2d_sprite_draw(
+			ent->sprite,
+			vector2d(ent->spriteOffset.x + 600,
+				ent->spriteOffset.y + 360),
+			&ent->scale,
+			NULL,
+			NULL,
+			NULL,
+			&ent->colorShift,
+			(int)ent->frame);
 }
 
 void entity_draw_all()

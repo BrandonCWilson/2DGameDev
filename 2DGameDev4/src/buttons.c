@@ -3,6 +3,7 @@
 #include "pause.h"
 #include "simple_logger.h"
 #include "map_editor.h"
+#include "main_menu.h"
 
 void button_return_to_main_menu(Button *self)
 {
@@ -42,6 +43,6 @@ void button_toggle_pause(Button *self)
 
 void button_restart_level(Button *self)
 {
-	game_restart_map(get_current_tilemap(), "levels/tilemap.map");
+	game_restart_map(get_current_tilemap(), get_current_tilemap()->filepath);
 	pause_toggle();
 }

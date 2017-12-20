@@ -1,3 +1,6 @@
+#ifndef _ENTITY_H_
+#define _ENTITY_H_
+
 #include <SDL.h>
 #include "gf2d_vector.h"
 #include "gf2d_sprite.h"
@@ -5,9 +8,7 @@
 #include "raycast.h"
 #include "audio.h"
 #include "pathfinding.h"
-
-#ifndef _ENTITY_H_
-#define _ENTITY_H_
+#include "animator.h"
 
 typedef struct Entity_s
 {
@@ -75,6 +76,7 @@ typedef struct Entity_s
 	BoxCollider *coll;
 	void(*update)(struct Entity_s *self);
 	void(*touch)(struct Entity_s *self, struct Entity_s *other);
+	void(*notice_sound)(struct Entity_s *self, Vector2D soundLocation);
 	void(*init)(struct Entity_s *self);
 	void(*take_damage)(struct Entity_s *self, int damage);
 	void(*die)(struct Entity_s *self);
@@ -83,6 +85,10 @@ typedef struct Entity_s
 	
 	Sound *ouch;
 	int lastHit;
+	
+	Animator *animator;
+	char currentAnimation[128];
+
 	Sprite *sprite;
 	float frame;
 	Bool singleFrame;

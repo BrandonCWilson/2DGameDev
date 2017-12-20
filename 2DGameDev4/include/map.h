@@ -1,7 +1,7 @@
-#include "tile.h"
-
 #ifndef _MAP_H_
 #define _MAP_H_
+
+#include "tile.h"
 
 typedef struct Map_S
 {
@@ -16,6 +16,7 @@ typedef struct
 	char *map;
 	Vector2D position;
 	int numEnemies;
+	char *filepath;
 }TileMap;
 
 void draw_map(Map *m);

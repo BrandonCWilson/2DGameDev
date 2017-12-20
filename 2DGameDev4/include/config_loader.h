@@ -12,6 +12,12 @@ typedef struct
 	char *name;
 } FunctionParser;
 
+typedef struct
+{
+	Entity *prefab_list;
+	int max;
+} PrefabManager;
+
 void config_loader_entities_init(char *filename);
 
 /*
@@ -24,7 +30,13 @@ void config_loader_entities();
 */
 void config_loader_levels(char *filename);
 
+PrefabManager *config_loader_get_prefab_manager();
+
 Entity * config_loader_get_prefab_by_name(char *name);
+
+void level_list_init();
+
+PriorityQueueList *level_list_get();
 
 FunctionParser funct[];
 #endif

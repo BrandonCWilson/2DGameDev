@@ -1,5 +1,6 @@
 #include "audio.h"
 #include "simple_logger.h"
+#include "physfs.h"
 
 float volume_master = 1.0;
 float volume_sound = 10.0;
@@ -171,6 +172,7 @@ Sound *sound_get_by_filename(char * filename)
 Sound *sound_load(char *filename, float volume, int defaultChannel)
 {
 	Sound *sound;
+	SDL_RWops *rw;
 	sound = sound_get_by_filename(filename);
 	if (sound)
 	{
@@ -182,7 +184,12 @@ Sound *sound_load(char *filename, float volume, int defaultChannel)
 	{
 		return NULL;
 	}
-	sound->sound = Mix_LoadWAV(filename);
+	if ((rw = PHYSFSRWOPS_openRead(filename)) == NULL)
+	{
+		slog("Could not load sound");
+		return NULL;
+	}
+	sound->sound = Mix_LoadWAV_RW(rw, 1);
 	if (!sound->sound)
 	{
 		slog("failed to load sound file %s", filename);

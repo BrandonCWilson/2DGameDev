@@ -335,6 +335,17 @@ void archer_update(Entity *self)
 	}
 }
 
+void archer_notice_sound(Entity *self, Vector2D soundLocation)
+{
+	if (self->alert == 0)
+	{
+		slog("I heard something!");
+		enemy_set_hunting_points(self, soundLocation, self->huntRadius, get_current_tilemap());
+		enemy_set_path(self);
+		self->alert = 1;
+	}
+}
+
 void archer_init(Entity *self)
 {
 	if (!self)
@@ -346,6 +357,7 @@ void archer_init(Entity *self)
 			self->coll->height / 2);
 	}
 	self->draw = archer_draw;
+	self->notice_sound = archer_notice_sound;
 }
 
 void archer_touch(Entity *self, Entity *other)

@@ -1,7 +1,7 @@
-#include "gf2d_sprite.h"
-
 #ifndef _TILE_H_
 #define _TILE_H_
+
+#include "gf2d_sprite.h"
 
 typedef struct Tile_S
 {

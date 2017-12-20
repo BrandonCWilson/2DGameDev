@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include "player.h"
 #include "config_loader.h"
+#include "physfs.h"
 
 TileMap *currentmap;
 
@@ -45,8 +46,8 @@ void tilemap_expand(TileMap *tilemap, int right, int down)
 	int tilePos;
 	int x, y;
 	if (!tilemap) return;
-	new_map = tilemap_new();
-	if (!new_map) return;
+	//new_map = tilemap_new();
+	//if (!new_map) return;
 
 	slog("Expanding tilemap!");
 
@@ -217,8 +218,35 @@ TileMap *tilemap_load(char *filename, Vector2D position)
 	int framewidth, frameheight, framesperline;
 	int tileCtr = 0;
 	int i;
+
+	PHYSFS_file *physf = NULL;
+	int fileLength;
+	char *fileContents;
+
 	if (!filename)return NULL;
-	file = fopen(filename, "r");
+	if (PHYSFS_exists(filename) == 0)
+	{
+		slog("level file does not exist");
+		return NULL;
+	}
+	physf = PHYSFS_openRead(filename);
+	fileLength = PHYSFS_fileLength(physf);
+	fileContents = (char *)malloc(sizeof(char)*(fileLength + 1));
+	PHYSFS_read(physf, fileContents, 1, fileLength);
+	fileContents[fileLength] = '\0';
+	PHYSFS_close(physf);
+
+	file = fopen("tmplevelfile.txt", "w");
+	if (!file)
+	{
+		slog("Unable to write temporary level file");
+		free(fileContents);
+		return NULL;
+	}
+	fprintf(file, fileContents);
+	fclose(file);
+
+	file = fopen("tmplevelfile.txt", "r");
 	if (!file)
 	{
 		slog("failed to open file %s", filename);
@@ -353,8 +381,10 @@ TileMap *tilemap_load(char *filename, Vector2D position)
 		}
 	}
 	fclose(file);
+	remove("tmplevelfile.txt");
 	set_current_tilemap(tilemap);
 	tilemap->position = position;
+	tilemap->filepath = filename;
 	return tilemap;
 }
 
@@ -372,7 +402,8 @@ void tilemap_draw_walkable(TileMap *tilemap, Vector2D position)
 				continue;
 			gf2d_sprite_draw(
 				tilemap->tileset,
-				vector2d(position.x + (i * tilemap->tileset->frame_w), position.y + (j * tilemap->tileset->frame_h)),
+				vector2d(position.x + (i * tilemap->tileset->frame_w) - (get_player() == NULL ? 0 : get_player()->position.x - 600),
+					position.y + (j * tilemap->tileset->frame_h) - (get_player() == NULL ? 0 : get_player()->position.y - 360)),
 				NULL,
 				NULL,
 				NULL,
@@ -397,7 +428,8 @@ void tilemap_draw_walls(TileMap *tilemap, Vector2D position)
 				continue;
 			gf2d_sprite_draw(
 				tilemap->tileset,
-				vector2d(position.x + (i * tilemap->tileset->frame_w), position.y + (j * tilemap->tileset->frame_h)),
+				vector2d(position.x + (i * tilemap->tileset->frame_w) - (get_player() == NULL ? 0 : get_player()->position.x - 600),
+					position.y + (j * tilemap->tileset->frame_h) - (get_player() == NULL ? 0 : get_player()->position.y - 360)),
 				NULL,
 				NULL,
 				NULL,

@@ -5,6 +5,7 @@
 #include "gf2d_draw.h"
 #include "config_loader.h"
 #include "input.h"
+#include "sound_detection.h"
 
 SDL_GameController *controller;
 SDL_Joystick *joystick;
@@ -39,6 +40,10 @@ void player_init(Entity *self)
 	set_player(self);
 	self->draw = player_draw;
 	vector2d_add(self->eyePos, self->position, vector2d(self->coll->width / 2, self->coll->height / 2));
+
+	self->animator = animator_new("Player", self->sprite);
+	animation_new("Player", "Idle", 1, 3, -1, "Idle", NULL, 8);
+	strcpy(self->currentAnimation, "Idle");
 }
 
 void player_eat(Entity *self, Vector2D eyePos)
@@ -93,6 +98,7 @@ void player_pull(Entity *self, Vector2D eyePos)
 {
 	Entity *nearestStone;
 	Entity *nearestCorpse;
+	Sonar *sonar;
 	Vector2D direction, diff, diff2;
 	if (self->holding == NULL)
 	{
@@ -117,7 +123,18 @@ void player_pull(Entity *self, Vector2D eyePos)
 				nearestStone->position.x += self->velocity.x;
 				nearestStone->position.y += self->velocity.y;
 				if (self->holding->layer == 6)
+				{
+					sonar = sonar_new();
+					if (!sonar)
+					{
+						slog("Could not spawn a sonar!");
+						return;
+					}
+					sonar->radius = 80;
+					sonar->center = self->holding->position;
+					sonar->noise = 100;
 					self->moveSpeed *= 0.5;
+				}
 			}
 		}
 	}
@@ -129,6 +146,19 @@ void player_pull(Entity *self, Vector2D eyePos)
 			self->holding->lastPosition = self->holding->position;
 			self->holding->position.x += self->velocity.x;
 			self->holding->position.y += self->velocity.y;
+
+			if (self->timer % 60 == 0)
+			{
+				sonar = sonar_new();
+				if (!sonar)
+				{
+					slog("Could not spawn a sonar!");
+					return;
+				}
+				sonar->radius = 600;
+				sonar->center = self->holding->position;
+				sonar->noise = 100;
+			}
 		}
 		else
 		{

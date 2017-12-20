@@ -7,6 +7,10 @@
 
 Bool game_done();
 
+void game_win();
+
+void game_lose();
+
 void game_load_map(char *map);
 
 void game_set_done_true();

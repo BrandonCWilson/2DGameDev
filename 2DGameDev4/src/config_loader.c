@@ -5,6 +5,7 @@
 #include "testUpdate.h"
 #include "projectile.h"
 #include "enemy.h"
+#include <physfs.h>
 
 FunctionParser funct[] =
 {
@@ -31,15 +32,50 @@ FunctionParser funct[] =
 int level_MAX_WIDTH = 0;
 int level_MAX_HEIGHT = 0;
 
-typedef struct 
-{
-	Entity *prefab_list;
-	int max;
-} PrefabManager;
+PriorityQueue *map_list;
+PriorityQueueList *level_list;
+char **levelstrings;
 
 PrefabManager prefab_manager;
 
-PriorityQueue *map_list;
+PrefabManager *config_loader_get_prefab_manager()
+{
+	return &prefab_manager;
+}
+
+PriorityQueueList *level_list_get()
+{
+	return level_list;
+}
+
+void level_list_init()
+{
+	char **i;
+	PriorityNode *cursor;
+	level_list = pqlist_new();
+	if (!level_list)
+	{
+		slog("Unable to initialize a level list!");
+		return;
+	}
+
+	// load in all the file locations for the levels
+	levelstrings = PHYSFS_enumerateFiles("levels");
+	for (i = levelstrings; *i != NULL; i++)
+	{
+		pqlist_insert(level_list, *i, 1);
+	}
+	for (cursor = level_list->head; cursor != NULL; cursor = cursor->next)
+	{
+		slog("Level found! %s", cursor->data);
+	}
+}
+
+void level_list_free()
+{
+	PHYSFS_freeList(levelstrings);
+	pqlist_free(level_list, NULL);
+}
 
 void * config_loader_char_to_function(char *fname)
 {
@@ -57,31 +93,56 @@ void * config_loader_char_to_function(char *fname)
 Entity * config_loader_get_prefab_by_name(char *name)
 {
 	int i;
-	slog("max prefabs: %i", prefab_manager.max);
+	//slog("max prefabs: %i", prefab_manager.max);
 	for (i = 0; i < prefab_manager.max; i++)
 	{
-		slog("comparing.. %s %s", name, prefab_manager.prefab_list[i].name);
+		//slog("comparing.. %s %s", name, prefab_manager.prefab_list[i].name);
 		if (strcmp(prefab_manager.prefab_list[i].name, name) == 0)
 		{
 			return &prefab_manager.prefab_list[i];
 		}
 	}
-	slog("could not find the prefab you were looking for");
+	//slog("could not find the prefab you were looking for");
 	return NULL;
 }
 
 int config_loader_entities_init_count_incoming(char *filename)
 {
-	FILE *f = fopen(filename, "r");
+	PHYSFS_file *physf = NULL;
+	int fileLength;
+	char *fileContents;
+	FILE *f = NULL;
 	char param[255];
 	char input[255];
 	int rtn = 0;
 
-	if (!f)
+	if (PHYSFS_exists(filename) != 0)
+	{
+		physf = PHYSFS_openRead(filename);
+		fileLength = PHYSFS_fileLength(physf);
+		fileContents = (char *)malloc(sizeof(char)*(fileLength + 1));
+		PHYSFS_read(physf, fileContents, 1, fileLength);
+		fileContents[fileLength] = '\0';
+		PHYSFS_close(physf);
+	}
+	else
 	{
 		slog("Unable to access the prefab file ents");
 		return;
 	}
+
+	f = fopen("tmpPrefabCounter.txt", "w");
+	if (!f)
+	{
+		slog("Unable to create a temp file for prefab handling");
+		free(fileContents);
+		return NULL;
+	}
+	fprintf(f, fileContents);
+	fclose(f);
+
+	f = fopen("tmpPrefabCounter.txt", "r");
+
 	while (fscanf(f, "%s", param) != EOF)
 	{
 		if (strcmp(param, "ent:") == 0)
@@ -94,6 +155,10 @@ int config_loader_entities_init_count_incoming(char *filename)
 
 void config_loader_entities_init(char *filename)
 {
+	PHYSFS_file *physf = NULL;
+	int fileLength;
+	char *fileContents;
+	
 	FILE *file;
 	char otherfile[1024];
 	int int1, int2, int3, int4;
@@ -111,7 +176,7 @@ void config_loader_entities_init(char *filename)
 	memset(prefab_manager.prefab_list, 0, sizeof(Entity)*numEnts);
 	prefab_manager.max = numEnts;
 
-	file = fopen(filename, "r");
+	file = fopen("tmpPrefabCounter.txt", "r");
 	if (!file)
 	{
 		slog("Unable to access the prefab file ents");
@@ -122,7 +187,7 @@ void config_loader_entities_init(char *filename)
 		if (strcmp(buffer, "ent:") == 0)
 		{
 			fscanf(file, "%s", prefab_manager.prefab_list[i].name);
-			slog("new prefab %i: %s",i, prefab_manager.prefab_list[i].name);
+			//slog("new prefab %i: %s",i, prefab_manager.prefab_list[i].name);
 			strcpy(buffer, prefab_manager.prefab_list[i].name);
 			while (strcmp(buffer, "END") != 0)
 			{
@@ -153,7 +218,7 @@ void config_loader_entities_init(char *filename)
 				if (strcmp(buffer, "layer:") == 0)
 				{
 					fscanf(file, "%i", &int1);
-					slog("layer: %i", int1);
+					//slog("layer: %i", int1);
 					prefab_manager.prefab_list[i].layer = int1;
 				}
 				if (strcmp(buffer, "init:") == 0)
@@ -258,14 +323,15 @@ void config_loader_entities_init(char *filename)
 					prefab_manager.prefab_list[i].shotSpeed = scalex;
 				}
 				fscanf(file, "%s", buffer);
-				slog("%s", buffer);
+				//slog("%s", buffer);
 			}
 			i++;
-			slog("%s", buffer);
+			//slog("%s", buffer);
 		}
 	}
 	fclose(file);
-	slog("Initialized the prefab array");
+	remove("tmpPrefabCounter.txt");
+	//slog("Initialized the prefab array");
 }
 
 void config_loader_entities()

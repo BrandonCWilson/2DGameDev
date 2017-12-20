@@ -30,6 +30,7 @@ void button_window_close(Button *self)
 
 void options_window_init()
 {
+	SDL_RWops *rw;
 	options_window = window_new();
 	if (!options_window) return NULL;
 
@@ -38,7 +39,12 @@ void options_window_init()
 	options_window->height = 500;
 	options_window->position = vector2d(350, 100);
 	options_window->label = "Testing.";
-	options_window->font = TTF_OpenFont("fonts/BradleyGratis.ttf", 32);
+	if ((rw = PHYSFSRWOPS_openRead("fonts/BradleyGratis.ttf")) == NULL)
+	{
+		slog("Could not load font for pause window.");
+		return NULL;
+	}
+	options_window->font = TTF_OpenFontRW(rw, 1, 32);
 	if (options_window->font == NULL)
 		slog("Unable to open a font for your window: %s", TTF_GetError());
 	options_window->update = window_update_generic;

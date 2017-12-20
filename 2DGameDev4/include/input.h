@@ -11,6 +11,7 @@ typedef struct PlayerInput_s
 	Bool pull;
 	Bool melee;
 	Bool hurt_self;
+	Bool cancel;
 
 	double move_x;
 	double move_y;

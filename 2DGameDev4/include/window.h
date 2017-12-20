@@ -5,6 +5,7 @@
 #include "gf2d_sprite.h"
 #include "priority_queue.h"
 #include <SDL_ttf.h>
+#include "priority_queue.h"
 
 typedef struct Button_s
 {
@@ -18,6 +19,23 @@ typedef struct Button_s
 	int buttonDown;
 	int buttonUp;
 } Button;
+
+typedef struct Scroll_s
+{
+	bool pressed;
+	void(*onRelease)(struct Scroll_s *self);
+
+	PriorityQueueList *optionsList;
+	int currentOption;
+
+	Sprite *sprite;
+	int leftArrow;
+	int rightArrow;
+
+	int timer;
+	int lastMove;
+	int moveDelay;
+} Scroll;
 
 typedef struct Slider_s
 {
@@ -40,6 +58,7 @@ typedef struct Slider_s
 typedef enum
 {
 	BUTTON_T,
+	SCROLL_T,
 	SLIDER_T
 } WIDGET_T;
 
@@ -51,6 +70,7 @@ typedef struct Widget_s
 	union {
 		Button *button;
 		Slider *slider;
+		Scroll *scroll;
 	} widget;
 } Widget;
 
