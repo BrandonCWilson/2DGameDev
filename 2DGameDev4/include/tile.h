@@ -3,24 +3,20 @@
 
 #include "gf2d_sprite.h"
 
-typedef struct Tile_S
+typedef struct Tile_s
 {
-	char *name;
-	int ID;
-	bool inUse;
-	Sprite *sprite;
 	int frame;
 	bool collides;
-}Tile;
+} Tile;
 
-Tile *tile_new();
+typedef struct Tileset_s
+{
+	Tile *tiles;
+	int max;
 
-void tile_init(int max);
+	Sprite *sprite;
+} Tileset;
 
-Tile * tile_get_by_id(int ID);
-
-void tile_delete(Tile *tile);
-
-void tile_system_close();
+Tileset *tileset_new(Uint32 max, Sprite *sprite);
 
 #endif // _TILE_H_

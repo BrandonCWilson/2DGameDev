@@ -1,77 +1,46 @@
 #include "tile.h"
-#include "simple_logger.h"
 
-typedef struct 
+void tileset_free(Tileset *tileset)
 {
-	Uint32 max_tiles;
-	Tile * tile_list;
-} TileManager;
-
-static TileManager tile_manager;
-
-void tile_init(int max)
-{
-	int i;
-	slog("initializing entity system..");
-	if (!max)
+	if (!tileset)
 	{
-		slog("cannot initialize an entity system for zero entities!");
-		return;
+		slog("Cannot free a NULL pointer to a tileset");
+		return NULL;
 	}
-	tile_manager.max_tiles = max;
-	tile_manager.tile_list = (Tile *)malloc(sizeof(Tile)*max);
-	memset(tile_manager.tile_list, 0, sizeof(Tile)*max);
 
-	slog("entity system initialized");
-	atexit(tile_system_close);
+	if (tileset->tiles != NULL)
+		free(tileset->tiles);
+	gf2d_sprite_free(tileset->sprite);
+	free(tileset);
 }
 
-Tile *tile_new()
+Tileset *tileset_new(Uint32 max, Sprite *sprite)
 {
-	int i;
-	/*search for an unused entity address*/
-	for (i = 0; i < tile_manager.max_tiles; i++)
+	Tileset *rtn;
+	if (max < 0)
 	{
-		if (!tile_manager.tile_list[i].inUse)
-		{
-			tile_delete(&tile_manager.tile_list[i]);	// clean up the old data
-			tile_manager.tile_list[i].inUse = true;	// set it to inUse
-			return &tile_manager.tile_list[i];			// return address of this array element
-		}
+		slog("Cannot allocate a tileset for 0 tiles!");
+		return NULL;
 	}
-	slog("error: out of tile addresses");
-	return NULL;
-}
 
-void tile_delete(Tile *tile)
-{
-	if (!tile)return;
-	memset(tile, 0, sizeof(Tile));	//clean up the data
-}
-
-void tile_free(Tile *tile)
-{
-	if (!tile)return;
-	tile->inUse = false;
-}
-
-Tile * tile_get_by_id(int ID)
-{
-	Tile *rtn = NULL;
-	int i;
-	for (i = 0; i < tile_manager.max_tiles; i++)
+	rtn = (Tileset *)malloc(sizeof(Tileset));
+	if (!rtn)
 	{
-		if (tile_manager.tile_list[i].ID == ID)
-		{
-			rtn = &tile_manager.tile_list[i];
-			break;
-		}
+		slog("Unable to allocate memory for the tileset");
+		return NULL;
 	}
+	memset(rtn, 0, sizeof(Tileset));
+
+	rtn->tiles = (Tile *)malloc(sizeof(Tile)*max);
+	if (!rtn->tiles)
+	{
+		slog("Unable to allocate memory for the tile array in the tileset");
+		return NULL;
+	}
+	memset(rtn->tiles, 0, sizeof(Tile)*max);
+	rtn->max = max;
+
+	rtn->sprite = sprite;
+
 	return rtn;
-}
-
-void tile_system_close()
-{
-	slog("Closing tile system..");
-	// do something
 }

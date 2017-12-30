@@ -334,7 +334,7 @@ void map_editor_init()
 	cursor_init();
 	if (PHYSFS_exists("levels/customlevel.map") == 0)
 	{
-		mapfile = PHYSFS_openAppend("levels/customelevel.map");
+		mapfile = PHYSFS_openAppend("levels/customlevel.map");
 		return;
 	}
 	// find a valid filename for this new map

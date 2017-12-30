@@ -1,5 +1,5 @@
 ﻿  game.c
-..\..\..\..\..\git\gameframework2d-master\src\game.c(152): warning C4305: '+=': truncation from 'double' to 'float'
+..\..\..\..\..\git\gameframework2d-master\src\game.c(157): warning C4305: '+=': truncation from 'double' to 'float'
 ..\..\..\..\..\git\gameframework2d-master\src\game.c(73): warning C4101: 'm': unreferenced local variable
 ..\..\..\..\..\git\gameframework2d-master\src\game.c(60): warning C4101: 'ouch': unreferenced local variable
 ..\..\..\..\..\git\gameframework2d-master\src\game.c(63): warning C4101: 'ray': unreferenced local variable
@@ -13,9 +13,22 @@
 ..\..\..\..\..\git\gameframework2d-master\src\game.c(67): warning C4101: 'button': unreferenced local variable
 ..\..\..\..\..\git\gameframework2d-master\src\game.c(58): warning C4101: 'prefab': unreferenced local variable
 ..\..\..\..\..\git\gameframework2d-master\src\game.c(57): warning C4101: 'player': unreferenced local variable
+  map_editor.c
+src\map_editor.c(32): warning C4098: 'map_editor_close': 'void' function returning a value
+src\map_editor.c(46): warning C4018: '<': signed/unsigned mismatch
+src\map_editor.c(48): warning C4018: '<': signed/unsigned mismatch
+src\map_editor.c(87): warning C4098: 'save_ent': 'void' function returning a value
+src\map_editor.c(103): warning C4098: 'save_ent': 'void' function returning a value
+src\map_editor.c(205): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+src\map_editor.c(212): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+src\map_editor.c(259): warning C4244: 'function': conversion from 'double' to 'float', possible loss of data
+src\map_editor.c(269): warning C4098: 'cursor_update': 'void' function returning a value
+src\map_editor.c(286): warning C4098: 'cursor_update': 'void' function returning a value
+src\map_editor.c(329): warning C4101: 'fileContents': unreferenced local variable
+src\map_editor.c(330): warning C4101: 'fileLength': unreferenced local variable
   Generating code
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\config_loader.c(154): warning C4715: 'config_loader_entities_init_count_incoming': not all control paths return a value
-c:\users\brando\documents\visual studio 2015\projects\2dgamedev4\2dgamedev4\src\hashmap.c(101): warning C4715: 'hashmap_expand': not all control paths return a value
-  All 249 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  2 of 249 functions ( 0.8%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    1 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   2DGameDev4.vcxproj -> C:\Users\Brando\Documents\Visual Studio 2015\Projects\2DGameDev4\Release\2DGameDev4.exe
